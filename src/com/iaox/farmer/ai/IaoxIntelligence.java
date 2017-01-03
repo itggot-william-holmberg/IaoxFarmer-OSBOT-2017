@@ -17,6 +17,7 @@ public class IaoxIntelligence implements Runnable {
 	@Override
 	public void run() {
 		while (!t.isInterrupted() && t.isAlive()) {
+			
 			if (IaoxAIO.CURRENT_TASK != null) {
 				switch (IaoxAIO.CURRENT_TASK.getAssignment()) {
 				case MINING:
@@ -27,12 +28,30 @@ public class IaoxIntelligence implements Runnable {
 
 				}
 			}
+			
+			/*
+			 * It is safe to interrupt our node when mining.. banking.. etc..
+			 * It is not safe to interrupt our node when we are in combat or webwalking etc..
+			 * If it is safe to interrupt, "roll the dice" and if we hit a specific number we have to do something
+			 * answer a phone call, open the dorr, yell at mom, go to the toilet, etc....
+			 * various "afk" things that will make sure that the script is not doing the exact same thing during the whole task
+			 * 
+			 */
+		
+			if(IaoxAIO.CURRENT_NODE != null && IaoxAIO.CURRENT_NODE.safeToInterrupt()){
+				//roll the dice and maybe go afk......
+			}
 			sleep(1000);
 		}
-
 	}
 
 	private void intelligentMining() {
+		
+		/*
+		 * If we already have an assignment, do nothing.
+		 * In the future, maybe change assignment in the middle of the task
+		 * For instance, if the current spot is "overcrowded" - change world or spot
+		 */
 		if (miningAssignment == null) {
 			miningAssignment = im.getNewAssignment();
 			frame.newMessage("Updated mining assignment");

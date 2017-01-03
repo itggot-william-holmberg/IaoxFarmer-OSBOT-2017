@@ -59,7 +59,7 @@ public class IaoxAIO extends Script {
 		gui = new Gui();
 		guiWait = true;
 		login();
-		
+
 		ii = new IaoxIntelligence();
 		ii.start(this);
 	}
@@ -86,11 +86,11 @@ public class IaoxAIO extends Script {
 	}
 
 	private void newTask() {
-		if(!TASK_HANDLER.isEmpty()){
-		CURRENT_TASK = TASK_HANDLER.poll();
-		updateNodes();
-		}else{
-			//generate new task in the future
+		if (!TASK_HANDLER.isEmpty()) {
+			CURRENT_TASK = TASK_HANDLER.poll();
+			updateNodes();
+		} else {
+			// generate new task in the future
 			stop();
 		}
 	}
@@ -115,7 +115,7 @@ public class IaoxAIO extends Script {
 		}
 
 	}
-	
+
 	private void handleGui() {
 		while (guiWait) {
 			if (!gui.isShowing()) {
@@ -310,7 +310,7 @@ public class IaoxAIO extends Script {
 		log(logoutMessage);
 		logoutTab.logOut();
 	}
-	
+
 	@Override
 	public void onPaint(Graphics2D g) {
 		g.drawString("Current task_list: " + TASK_HANDLER, 50, 50);
@@ -324,12 +324,12 @@ public class IaoxAIO extends Script {
 		if (muleThread.getThread() != null) {
 			muleThread.getThread().interrupt();
 		}
-		
-		if (ii.getThread() != null){
+
+		if (ii.getThread() != null) {
 			ii.getThread().interrupt();
 			ii.getThread().destroy();
 		}
-		
+
 		gui.frame.dispose();
 	}
 

@@ -16,6 +16,15 @@ public class IntelligentMining {
 		this.script = script;
 	}
 	public MiningAssignment getNewAssignment(){
+		/*
+		 * Should be randomly generated depending on various factors
+		 * 
+		 * Experience only?
+		 * Moneymaking only?
+		 * 
+		 * Switch between these factors to prevent "typical bot behaviour: camp same spot for 20 hours"
+		 * 
+		 */
 		return MiningAssignment.IRON_ORE_RIMMINGTON;
 	}
 	
