@@ -8,12 +8,12 @@ public class WalkToMiningBank extends Node{
 
 	@Override
 	public boolean active() {
-		return !miningMethods.readyToMine() && !miningMethods.playerInArea(Banks.DRAYNOR);
+		return !miningMethods.readyToMine() && !miningMethods.playerInBankArea();
 	}
 
 	@Override
 	public void execute() {
-		walkingMethods.webWalk(Banks.DRAYNOR);		
+		walkingMethods.webWalk(miningMethods.getBankArea());		
 	}
 
 	@Override

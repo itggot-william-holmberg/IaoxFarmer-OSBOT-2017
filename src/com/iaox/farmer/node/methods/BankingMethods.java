@@ -32,4 +32,20 @@ public class BankingMethods {
 			}
 		}
 	}
+
+	public void depositBoxDepositAll() {
+		if(script.depositBox.isOpen()){
+			script.depositBox.depositAll();	
+			new ConditionalSleep(4000){
+				@Override
+				public boolean condition() throws InterruptedException {
+					IaoxAIO.sleep(300);
+					return script.inventory.isEmpty();
+				}	
+			}.sleep();
+		}else{
+			script.depositBox.open();
+		}
+		
+	}
 }

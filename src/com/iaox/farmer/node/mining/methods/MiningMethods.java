@@ -21,14 +21,27 @@ public class MiningMethods {
 		return area.contains(script.myPlayer());
 	}
 	
+	public boolean playerInBankArea(){
+		return getBankArea() != null && playerInArea(getBankArea());
+	}
+	
+	public Area getBankArea(){
+		return getAssignment().getBankArea();
+	}
+	
 	public boolean readyToMine(){
 		return IaoxIntelligence.getMiningAssignment() != null && !script.inventory.isFull();
 	}
 	
+	public MiningAssignment getAssignment(){
+		return IaoxIntelligence.getMiningAssignment();
+	}
+	
+	
 	@SuppressWarnings("unchecked")
 	public void mine() {
 		IaoxAIO.CURRENT_ACTION = "Lets Mine!";
-		MiningAssignment assignment = IaoxIntelligence.getMiningAssignment();
+		MiningAssignment assignment = getAssignment();
 		
 		RS2Object ore = script.objects.closest(
 				object -> assignment.getObjectIDs().contains(object.getId()) && assignment.getObjectArea().contains(object));
@@ -62,4 +75,5 @@ public class MiningMethods {
 			}
 		}.sleep();
 	}
+
 }

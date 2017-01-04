@@ -10,11 +10,29 @@ public class MiningBank extends Node{
 
 	@Override
 	public boolean active() {
-		return !miningMethods.readyToMine() && miningMethods.playerInArea(Banks.DRAYNOR);
+		return !miningMethods.readyToMine() && miningMethods.playerInBankArea();
 	}
 
 	@Override
 	public void execute() {
+		switch(miningMethods.getAssignment()){
+		case IRON_ORE_RIMMINGTON:
+			depositBoxBanking();
+			break;
+		default:
+			defaultBanking();
+			break;
+		
+		}
+	}
+
+	private void depositBoxBanking() {
+		if(script.inventory.isFull()){
+			bankingMethods.depositBoxDepositAll();
+		}	
+	}
+
+	private void defaultBanking() {
 		if(script.inventory.isFull()){
 			bankingMethods.depositAll();
 		}

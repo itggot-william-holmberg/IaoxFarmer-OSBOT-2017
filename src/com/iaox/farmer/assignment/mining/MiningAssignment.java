@@ -7,11 +7,12 @@ import java.util.List;
 import org.osbot.rs07.api.map.Area;
 
 public enum MiningAssignment {
-	IRON_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_IRON_1,MiningObjectIDs.ironOreID, 15);
+	IRON_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_IRON_1, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.ironOreID, 15);
 	
 	private List<Integer> objectIDs;
 	private Area miningArea;
 	private Area objectArea;
+	private Area bankArea;
 	private int requiredLevel;
 	
 	/*
@@ -19,9 +20,10 @@ public enum MiningAssignment {
 	 * For instance, if you are mining iron ores in rimmington, then the mining area would be rimmington
 	 * But the objectArea would only be the specific area that contains the iron ores
 	 */
-	MiningAssignment(Area miningArea, Area objectArea, Integer[] objectIDs, int requiredLevel){
+	MiningAssignment(Area miningArea, Area objectArea, Area bankArea, Integer[] objectIDs, int requiredLevel){
 		this.miningArea = miningArea;
 		this.objectArea = objectArea;
+		this.bankArea = bankArea;
 		this.objectIDs = new ArrayList<Integer>();
 		Arrays.asList(objectIDs).forEach(object->{
 			this.objectIDs.add(object);
@@ -39,6 +41,10 @@ public enum MiningAssignment {
 	
 	public Area getObjectArea(){
 		return objectArea;
+	}
+	
+	public Area getBankArea(){
+		return bankArea;
 	}
 	
 	public int getRequiredLevel(){

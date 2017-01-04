@@ -337,6 +337,9 @@ public class IaoxAIO extends Script {
 
 		g.setColor(Color.BLACK);
 		g.drawString("Time ran: " + ft(timeRan), 250, 360);
+		if(ii != null){
+			g.drawString("Amount of ticks: " + ii.getTicks(), 350, 360);
+		}
 
 		g.setColor(Color.WHITE);
 		g.drawString("Current task_list: " + TASK_HANDLER, 50, 370);
