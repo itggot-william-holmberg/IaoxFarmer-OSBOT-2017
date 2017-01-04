@@ -8,23 +8,24 @@ public class WalkToMiningLocation extends Node{
 
 	@Override
 	public boolean active() {
-		return readyToMine() && !playerInArea(IaoxIntelligence.getMiningAssignment().getMiningArea());
+		return miningMethods.readyToMine() && !miningMethods.playerInArea(IaoxIntelligence.getMiningAssignment().getObjectArea());
 	}
 
 	@Override
 	public void execute() {
-		script.walking.webWalk(IaoxIntelligence.getMiningAssignment().getMiningArea());
+		walkingMethods.webWalk(IaoxIntelligence.getMiningAssignment().getObjectArea());
 	}
-
-	@Override
-	public String toString() {
-		return "Walking to mining location...";
-	}
-
+	
 	@Override
 	public boolean safeToInterrupt() {
 		//we do not want IaoxIntelligence to interrupt the script when we are walking
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return "Walking to mining location";
+	}
+
 
 }

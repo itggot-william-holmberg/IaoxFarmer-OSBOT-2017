@@ -1,18 +1,24 @@
 package com.iaox.farmer.node.mining;
 
+
+
 import com.iaox.farmer.ai.IaoxIntelligence;
 import com.iaox.farmer.node.Node;
 
-public class MiningAction extends Node{
-
+public class MiningAction extends Node {
+	
 	@Override
 	public boolean active() {
-		return readyToMine() && playerInArea(IaoxIntelligence.getMiningAssignment().getMiningArea());
+		return miningMethods.readyToMine() && miningMethods.playerInArea(IaoxIntelligence.getMiningAssignment().getObjectArea());
 	}
 
 	@Override
 	public void execute() {
-		script.log("lets mine");
+		if (!script.myPlayer().isAnimating()) {
+			miningMethods.mine();
+		} else {
+			miningMethods.mineSleep();
+		}
 	}
 
 	@Override
@@ -22,7 +28,7 @@ public class MiningAction extends Node{
 
 	@Override
 	public String toString() {
-		return "Mining...";
+		return "Mining";
 	}
 
 }

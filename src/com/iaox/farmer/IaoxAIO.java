@@ -1,12 +1,16 @@
 package com.iaox.farmer;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.osbot.rs07.api.model.Player;
+import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.api.util.ExperienceTracker;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 import org.osbot.rs07.utility.ConditionalSleep;
@@ -16,6 +20,8 @@ import com.iaox.farmer.events.LoginEvent;
 import com.iaox.farmer.frame.Gui;
 import com.iaox.farmer.node.Node;
 import com.iaox.farmer.node.mining.MiningAction;
+import com.iaox.farmer.node.mining.MiningBank;
+import com.iaox.farmer.node.mining.WalkToMiningBank;
 import com.iaox.farmer.node.mining.WalkToMiningLocation;
 import com.iaox.farmer.task.Task;
 import com.iaox.farmer.tcp.MuleThread;
@@ -34,7 +40,6 @@ public class IaoxAIO extends Script {
 	private String password;
 
 	public static boolean guiWait;
-
 	private Gui gui;
 
 	private IaoxIntelligence ii;
@@ -44,6 +49,12 @@ public class IaoxAIO extends Script {
 
 	public static Task CURRENT_TASK = null;
 	public static Node CURRENT_NODE = null;
+	public static String CURRENT_ACTION;
+
+	public long timeStarted;
+	public long timeRan;
+
+	public ExperienceTracker xpTracker;
 
 	@Override
 	public void onStart() throws InterruptedException {
@@ -62,6 +73,9 @@ public class IaoxAIO extends Script {
 
 		ii = new IaoxIntelligence();
 		ii.start(this);
+
+		timeStarted = System.currentTimeMillis();
+		this.xpTracker = getExperienceTracker();
 	}
 
 	@Override
@@ -133,6 +147,9 @@ public class IaoxAIO extends Script {
 	private void skillSwitch() {
 		switch (CURRENT_TASK.getAssignment()) {
 		case MINING:
+			xpTracker.start(Skill.MINING);
+			NODE_HANDLER.add(new MiningBank().init(this));
+			NODE_HANDLER.add(new WalkToMiningBank().init(this));
 			NODE_HANDLER.add(new WalkToMiningLocation().init(this));
 			NODE_HANDLER.add(new MiningAction().init(this));
 			break;
@@ -313,10 +330,44 @@ public class IaoxAIO extends Script {
 
 	@Override
 	public void onPaint(Graphics2D g) {
-		g.drawString("Current task_list: " + TASK_HANDLER, 50, 50);
-		g.drawString("Current node_list: " + NODE_HANDLER, 50, 70);
-		g.drawString("Current task: " + CURRENT_TASK, 50, 90);
-		g.drawString("Current node: " + CURRENT_NODE, 50, 120);
+		timeRan = System.currentTimeMillis() - timeStarted;
+
+		g.setColor(new Color(56, 58, 60));
+		g.fillRect(5, 340, 505, 135);
+
+		g.setColor(Color.BLACK);
+		g.drawString("Time ran: " + ft(timeRan), 250, 360);
+
+		g.setColor(Color.WHITE);
+		g.drawString("Current task_list: " + TASK_HANDLER, 50, 370);
+		g.drawString("Current node_list: " + NODE_HANDLER, 50, 390);
+		g.drawString("Current task: " + CURRENT_TASK, 50, 410);
+		g.drawString("Current node: " + CURRENT_NODE, 50, 430);
+		g.drawString("Current action: " + CURRENT_ACTION, 50, 450);
+
+		if (xpTracker != null && xpTracker.getGainedXP(Skill.MINING) > 0) {
+			g.setColor(Color.RED);
+			g.drawString("XP Gained: " + xpTracker.getGainedXP(Skill.MINING), 300, 410);
+			g.drawString("Current XP/h: " + xpTracker.getGainedXPPerHour(Skill.MINING), 300, 430);
+		}
+	}
+
+	private String ft(long duration) {
+
+		String res = "";
+		long days = TimeUnit.MILLISECONDS.toDays(duration);
+		long hours = TimeUnit.MILLISECONDS.toHours(duration)
+				- TimeUnit.DAYS.toHours(TimeUnit.MILLISECONDS.toDays(duration));
+		long minutes = TimeUnit.MILLISECONDS.toMinutes(duration)
+				- TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration));
+		long seconds = TimeUnit.MILLISECONDS.toSeconds(duration)
+				- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration));
+		if (days == 0) {
+			res = (hours + ":" + minutes + ":" + seconds);
+		} else {
+			res = (days + ":" + hours + ":" + minutes + ":" + seconds);
+		}
+		return res;
 	}
 
 	@Override
@@ -327,8 +378,9 @@ public class IaoxAIO extends Script {
 
 		if (ii.getThread() != null) {
 			ii.getThread().interrupt();
-			ii.getThread().destroy();
+			ii.getThread().interrupt();
 		}
+		ii.getThread().interrupt();
 
 		gui.frame.dispose();
 	}
