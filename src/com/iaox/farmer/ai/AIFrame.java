@@ -35,6 +35,6 @@ public class AIFrame extends JFrame {
 	}
 	
 	public void newMessage(String string){
-		textArea.append(string);
+		textArea.append(string + "\n");
 	}
 }

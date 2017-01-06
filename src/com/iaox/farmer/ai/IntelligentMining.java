@@ -37,6 +37,8 @@ public class IntelligentMining {
 		});
 		return tempList;
 	}
+	
+	
 
 	private int getMiningLevel(){
 		return script.getSkills().getDynamic(Skill.MINING);

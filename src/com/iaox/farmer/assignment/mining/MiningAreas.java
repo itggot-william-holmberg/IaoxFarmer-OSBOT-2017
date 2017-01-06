@@ -14,4 +14,7 @@ public class MiningAreas {
 					new Position(2988, 3246, 0), new Position(2990, 3241, 0) });
 
 	public static Area RIMMINGTON_IRON_1 = new Area(2981, 3234, 2982, 3233);
+	public static Area RIMMINGTON_IRON_2 = new Area(2968,3239,2970,3242);
+	
+	public static Area RIMMINGTON_GOLD_1 = new Area(2975,3234,2977,3233);
 }

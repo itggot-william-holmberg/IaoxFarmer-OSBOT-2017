@@ -14,7 +14,9 @@ private Script script;
 	}
 
 	public void webWalk(Area area){
+		if(area != null){
 		IaoxAIO.CURRENT_ACTION = "Webwalking...";
 		script.walking.webWalk(area);
+		}
 	}
 }

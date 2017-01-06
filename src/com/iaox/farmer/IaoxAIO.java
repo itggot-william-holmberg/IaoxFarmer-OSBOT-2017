@@ -3,6 +3,7 @@ package com.iaox.farmer;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,22 +17,31 @@ import org.osbot.rs07.script.ScriptManifest;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.ai.IaoxIntelligence;
+import com.iaox.farmer.data.Areas;
+import com.iaox.farmer.data.GrandExchangeData;
+import com.iaox.farmer.data.items.IaoxItem;
 import com.iaox.farmer.events.LoginEvent;
 import com.iaox.farmer.frame.Gui;
 import com.iaox.farmer.node.Node;
+import com.iaox.farmer.node.grandexchange.BuyItem;
+import com.iaox.farmer.node.grandexchange.GrandExchangeBank;
+import com.iaox.farmer.node.grandexchange.WalkToGrandExchange;
 import com.iaox.farmer.node.mining.MiningAction;
 import com.iaox.farmer.node.mining.MiningBank;
 import com.iaox.farmer.node.mining.WalkToMiningBank;
 import com.iaox.farmer.node.mining.WalkToMiningLocation;
+import com.iaox.farmer.node.mule.Deposit;
+import com.iaox.farmer.node.mule.DepositBank;
+import com.iaox.farmer.node.mule.SellItems;
 import com.iaox.farmer.task.Task;
 import com.iaox.farmer.tcp.MuleThread;
 
-@ScriptManifest(author = "Iaox", info = "Farms for you", logo = "", name = "IaoxSlaves", version = 0.3)
+@ScriptManifest(author = "Iaox", info = "Farms for you", logo = "", name = "IaoxSlave", version = 0.3)
 public class IaoxAIO extends Script {
 
-	private MuleThread muleThread;
+	public static MuleThread muleThread;
 
-	public static int coinsNeeded = 1337;
+	public static int coinsNeeded = 0;
 	private int startCash;
 
 	public static boolean shouldTrade = false;
@@ -46,6 +56,8 @@ public class IaoxAIO extends Script {
 
 	public static Deque<Task> TASK_HANDLER;
 	public static List<Node> NODE_HANDLER;
+	public static List<Node> GRAND_EXCHANGE_NODE_HANDLER;
+	public static List<Node> MULE_NODE_HANDLER;
 
 	public static Task CURRENT_TASK = null;
 	public static Node CURRENT_NODE = null;
@@ -56,14 +68,23 @@ public class IaoxAIO extends Script {
 
 	public ExperienceTracker xpTracker;
 
+	public static boolean shouldWithdrawCash;
+
+	public static boolean shouldThreadRun = true;
+	
+
 	@Override
 	public void onStart() throws InterruptedException {
 
 		TASK_HANDLER = new LinkedList<Task>();
 		NODE_HANDLER = new ArrayList<Node>();
+		GRAND_EXCHANGE_NODE_HANDLER = new ArrayList<Node>();
+		MULE_NODE_HANDLER = new ArrayList<Node>();
+		
+		addGrandExchangeData();
 
 		username = getBot().getUsername();
-		password = "ugot00wned2";
+		password = "pass123";
 
 		muleThread = new MuleThread(this);
 
@@ -76,32 +97,74 @@ public class IaoxAIO extends Script {
 
 		timeStarted = System.currentTimeMillis();
 		this.xpTracker = getExperienceTracker();
+
+		GrandExchangeData.ITEMS_TO_BUY_LIST = new ArrayList<IaoxItem>();
+
 	}
 
 	@Override
 	public int onLoop() {
+		log("loop");
 		handleGui();
-
-		if (!shouldTrade) {
-			handleTask();
-		} else {
+		if (shouldTrade) {
 			handleTrade();
+		} else if (!GrandExchangeData.ITEMS_TO_BUY_LIST.isEmpty()) {
+			handleGrandExchange();
+		} else {
+			handleTask();
 		}
 
 		return 600;
 	}
 
-	private void handleTask() {
-		if (CURRENT_TASK != null && !CURRENT_TASK.isCompleted()) {
-			handleNode();
+	private void addGrandExchangeData() {
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS = new ArrayList<IaoxItem>();
+		GrandExchangeData.CURRENT_SELLABLE_ITEMS = new ArrayList<IaoxItem>();
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.IRON_ORE);
+		addGrandExchangeNodes();
+	}
+
+	private void handleGrandExchange() {
+		if (!GRAND_EXCHANGE_NODE_HANDLER.isEmpty()) {
+			executeGrandExchangeNode();
 		} else {
+			addGrandExchangeNodes();
+		}
+	}
+
+	private void executeGrandExchangeNode() {
+		log("handle ge task");
+		Boolean active = false;
+		for (Node node : GRAND_EXCHANGE_NODE_HANDLER) {
+			if (node.active()) {
+				active = true;
+				CURRENT_NODE = node;
+				node.execute();
+				break;
+			}
+		}
+
+		// Should probably keep track of this to map where and when no node can
+		// be found.
+		if (!active) {
+			CURRENT_NODE = null;
+		}
+
+	}
+
+	private void handleTask() {
+		if (CURRENT_TASK == null) {
 			newTask();
+		} else if (CURRENT_TASK.isCompleted(this)) {
+			TASK_HANDLER.remove(CURRENT_TASK);
+		} else {
+			handleNode();
 		}
 	}
 
 	private void newTask() {
 		if (!TASK_HANDLER.isEmpty()) {
-			CURRENT_TASK = TASK_HANDLER.poll();
+			CURRENT_TASK = TASK_HANDLER.getFirst();
 			updateNodes();
 		} else {
 			// generate new task in the future
@@ -111,6 +174,9 @@ public class IaoxAIO extends Script {
 
 	private void updateNodes() {
 
+		GRAND_EXCHANGE_NODE_HANDLER.clear();
+		MULE_NODE_HANDLER.clear();
+		IaoxAIO.coinsNeeded = 0;
 		if (!NODE_HANDLER.isEmpty()) {
 			NODE_HANDLER.clear();
 		}
@@ -156,32 +222,64 @@ public class IaoxAIO extends Script {
 		}
 	}
 
+	private void addGrandExchangeNodes() {
+
+		NODE_HANDLER.clear();
+		MULE_NODE_HANDLER.clear();
+		// reset the current sellable items list.
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.forEach(item -> {
+			GrandExchangeData.CURRENT_SELLABLE_ITEMS.add(item);
+		});
+
+		GRAND_EXCHANGE_NODE_HANDLER.add(new BuyItem().init(this));
+		GRAND_EXCHANGE_NODE_HANDLER.add(new WalkToGrandExchange().init(this));
+		GRAND_EXCHANGE_NODE_HANDLER.add(new GrandExchangeBank().init(this));
+	}
+	
+	private void addMuleDepositNodes() {
+
+		NODE_HANDLER.clear();
+		GRAND_EXCHANGE_NODE_HANDLER.clear();
+		// reset the current sellable items list.
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.forEach(item -> {
+			GrandExchangeData.CURRENT_SELLABLE_ITEMS.add(item);
+		});
+
+		MULE_NODE_HANDLER.add(new Deposit().init(this));
+		MULE_NODE_HANDLER.add(new DepositBank().init(this));
+		MULE_NODE_HANDLER.add(new SellItems().init(this));
+		MULE_NODE_HANDLER.add(new WalkToGrandExchange().init(this));
+	}
+
 	private void handleNode() {
-		if (!NODE_HANDLER.isEmpty()) {
+		if (!NODE_HANDLER.isEmpty() && ii.scriptShouldRun) {
 			executeNode();
-		} else if (!TASK_HANDLER.isEmpty()) {
-			CURRENT_TASK = TASK_HANDLER.poll();
 		} else {
-			// In the future, generate a new task
-			stop();
+			updateNodes();
 		}
 	}
 
 	private void executeNode() {
-		Boolean active = false;
-		for (Node node : NODE_HANDLER) {
-			if (node.active()) {
-				active = true;
-				CURRENT_NODE = node;
-				node.execute();
-				break;
+		log("execute node");
+		if (client.isLoggedIn()) {
+			Boolean active = false;
+			for (Node node : NODE_HANDLER) {
+				if (node.active()) {
+					active = true;
+					CURRENT_NODE = node;
+					node.execute();
+					break;
+				}
 			}
-		}
 
-		// Should probably keep track of this to map where and when no node can
-		// be found.
-		if (!active) {
-			CURRENT_NODE = null;
+			// Should probably keep track of this to map where and when no node
+			// can
+			// be found.
+			if (!active) {
+				CURRENT_NODE = null;
+			}
+		} else {
+			login();
 		}
 	}
 
@@ -219,32 +317,52 @@ public class IaoxAIO extends Script {
 		} else if (coinsNeeded > 0) {
 			slaveTradeWithdraw();
 		} else {
-			slaveTradeDeposit();
+			handleMuleDepositNodes();
 		}
 	}
 
-	private void slaveTradeDeposit() {
 
-		if (!trade.isCurrentlyTrading() && !inventory.contains(995)) {
-			log("we are done!");
-			shouldTrade = false;
-			return;
+	private void handleMuleDepositNodes() {
+		if (!MULE_NODE_HANDLER.isEmpty()) {
+			executeMuleDepositNode();
+		} else {
+			addMuleDepositNodes();
 		}
-
-		log("lets trade:" + muleThread.getMule());
-
-		if (!trade.isCurrentlyTrading()) {
-			tradePlayer();
-		} else if (trade.isFirstInterfaceOpen()) {
-			if (inventory.contains(995)) {
-				trade.offer(995, (int) inventory.getAmount(995));
-			} else if (trade.didOtherAcceptTrade()) {
-				trade.acceptTrade();
+	}
+	
+	private void executeMuleDepositNode() {
+		log("handle mule task");
+		Boolean active = false;
+		for (Node node : MULE_NODE_HANDLER) {
+			if (node.active()) {
+				active = true;
+				CURRENT_NODE = node;
+				node.execute();
+				break;
 			}
-		} else if (trade.isSecondInterfaceOpen()) {
-			acceptSecondTradeInterface();
 		}
 
+		// Should probably keep track of this to map where and when no node can
+		// be found.
+		if (!active) {
+			CURRENT_NODE = null;
+		}
+	}
+
+	private void withdrawCash() {
+		if(!Areas.GRAND_EXCHANGE_AREA.contains(myPlayer())){
+			log("webwalking to ge");
+			walking.webWalk(Areas.GRAND_EXCHANGE_AREA);
+		}else if(!bank.isOpen()){
+			try {
+				log("lets open bank");
+				bank.open();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 	}
 
 	private void slaveTradeWithdraw() {
@@ -333,12 +451,12 @@ public class IaoxAIO extends Script {
 		timeRan = System.currentTimeMillis() - timeStarted;
 
 		g.setColor(new Color(56, 58, 60));
-		g.fillRect(5, 340, 505, 135);
+		// g.fillRect(5, 340, 505, 135);
 
 		g.setColor(Color.BLACK);
 		g.drawString("Time ran: " + ft(timeRan), 250, 360);
-		if(ii != null){
-			g.drawString("Amount of ticks: " + ii.getTicks(), 350, 360);
+		if (ii != null) {
+			g.drawString("Amount of ticks: " + ii.getTicks(), 380, 360);
 		}
 
 		g.setColor(Color.WHITE);
@@ -349,10 +467,25 @@ public class IaoxAIO extends Script {
 		g.drawString("Current action: " + CURRENT_ACTION, 50, 450);
 
 		if (xpTracker != null && xpTracker.getGainedXP(Skill.MINING) > 0) {
-			g.setColor(Color.RED);
+			g.setColor(Color.BLACK);
 			g.drawString("XP Gained: " + xpTracker.getGainedXP(Skill.MINING), 300, 410);
 			g.drawString("Current XP/h: " + xpTracker.getGainedXPPerHour(Skill.MINING), 300, 430);
 		}
+
+		if (ii.getBreakHandler() != null) {
+			g.setColor(Color.RED);
+			g.drawString("Current break_list " + ii.getBreakHandler(), 50, 50);
+			if (ii.getLeftSleepTime() > 1000) {
+				g.drawString("We are breaking! ", 50, 70);
+				g.drawString("Time untill break is done: " + ft(ii.getLeftSleepTime()), 50, 90);
+			} else {
+				g.drawString("Current sesson_playtime(ticks) " + ii.getCurrentPlayTime(), 50, 70);
+				g.drawString("We will break in "
+						+ (ii.getBreakHandler().getFirst().getPlayTime() - (ii.getCurrentPlayTime() / 60) + " minutes"),
+						50, 90);
+			}
+		}
+
 	}
 
 	private String ft(long duration) {
@@ -379,13 +512,18 @@ public class IaoxAIO extends Script {
 			muleThread.getThread().interrupt();
 		}
 
-		if (ii.getThread() != null) {
-			ii.getThread().interrupt();
-			ii.getThread().interrupt();
-		}
-		ii.getThread().interrupt();
-
+		ii.destroy();
+		shouldThreadRun = false;
 		gui.frame.dispose();
+	}
+
+	public static void realSleep(int milli) {
+		try {
+			Script.sleep(milli);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

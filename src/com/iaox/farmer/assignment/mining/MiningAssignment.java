@@ -7,8 +7,12 @@ import java.util.List;
 import org.osbot.rs07.api.map.Area;
 
 public enum MiningAssignment {
-	IRON_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_IRON_1, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.ironOreID, 15);
 	
+	IRON_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_IRON_1, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.ironRockID, 15),
+	IRON_ORE_RIMMINGTON_2(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_IRON_2, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.ironRockID, 15),
+
+	GOLD_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_GOLD_1, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.goldRockID, 15);
+
 	private List<Integer> objectIDs;
 	private Area miningArea;
 	private Area objectArea;

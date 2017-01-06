@@ -1,6 +1,7 @@
 package com.iaox.farmer.task;
 
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.script.Script;
 
 import com.iaox.farmer.assignment.Assignment;
 
@@ -16,8 +17,8 @@ public class Task {
 		this.skill = skill;
 	}
 
-	public boolean isCompleted() {
-		return false;
+	public boolean isCompleted(Script script) {
+		return script.getSkills().getDynamic(skill) >= levelGoal;
 	}
 
 	public Assignment getAssignment() {
