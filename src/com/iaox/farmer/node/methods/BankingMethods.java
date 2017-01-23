@@ -98,4 +98,25 @@ public class BankingMethods {
 		}
 
 	}
+
+	public void depositAll(String string) {
+		if (script.bank.isOpen()) {
+			script.bank.depositAll(string);
+			new ConditionalSleep(4000) {
+				@Override
+				public boolean condition() throws InterruptedException {
+					IaoxAIO.sleep(300);
+					return script.inventory.isEmpty();
+				}
+			}.sleep();
+		} else {
+			try {
+				script.bank.open();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
 }

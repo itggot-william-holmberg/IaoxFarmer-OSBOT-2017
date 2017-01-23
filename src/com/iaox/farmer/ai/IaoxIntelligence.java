@@ -2,12 +2,17 @@ package com.iaox.farmer.ai;
 
 import java.util.LinkedList;
 
+import org.osbot.rs07.api.model.Entity;
+import org.osbot.rs07.api.model.RS2Object;
+import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.IaoxAIO;
+import com.iaox.farmer.assignment.combat.FightingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
+import com.iaox.farmer.assignment.woodcutting.WoodCuttingAssignment;
 import com.iaox.farmer.data.Data;
 import com.iaox.farmer.node.Node;
 import com.iaox.farmer.node.methods.Players;
@@ -19,7 +24,11 @@ public class IaoxIntelligence implements Runnable {
 	private Script script;
 
 	private static MiningAssignment miningAssignment;
+	private static FightingAssignment fightingAssignment;
+	private static WoodCuttingAssignment woodcuttingAssignment;
+	private static Entity lastClickedObject;
 	private IntelligentMining im;
+	private IntelligentCombat cm;
 	private int ticks;
 	private int lastTickReset;
 
@@ -35,7 +44,6 @@ public class IaoxIntelligence implements Runnable {
 	private int sleepTime = 0;
 	private int lastMuleTrade;
 
-	
 	public void start(Script script) {
 		this.script = script;
 		this.players = new Players(script);
@@ -44,6 +52,7 @@ public class IaoxIntelligence implements Runnable {
 		frame.setVisible(true);
 
 		im = new IntelligentMining(this.script);
+		cm = new IntelligentCombat(this.script);
 
 		break_handler = new LinkedList<RandomBreak>();
 		generateNewBreaks();
@@ -53,15 +62,15 @@ public class IaoxIntelligence implements Runnable {
 			t.start();
 		}
 	}
-	
+
 	@Override
 	public void run() {
 		while (IaoxAIO.shouldThreadRun && !t.isInterrupted() && t.isAlive()) {
-			script.log("thread running");
 
 			if (ticks - lastTickReset > IaoxAIO.random(180, 350)) {
 				resetVariables();
 			}
+			
 
 			if (script.client.isLoggedIn()) {
 
@@ -72,7 +81,7 @@ public class IaoxIntelligence implements Runnable {
 				if (IaoxAIO.CURRENT_NODE != null && IaoxAIO.CURRENT_NODE.safeToInterrupt() && !IaoxAIO.shouldTrade) {
 					randomBehaviour();
 					intelligentBreaking();
-					intelligentMuleDeposit();
+					//intelligentMuleDeposit();
 				}
 			} else {
 				intelligentBreaking();
@@ -82,7 +91,6 @@ public class IaoxIntelligence implements Runnable {
 			ticks++;
 		}
 	}
-	
 
 	/*
 	 * Lets reset the variables, such as "amount of world changes", every third
@@ -92,10 +100,10 @@ public class IaoxIntelligence implements Runnable {
 	private void resetVariables() {
 		frame.newMessage("Reset variables!");
 		amountOfWorldChanges = amountOfWorldChanges - IaoxAIO.random(1, 2);
+		lastClickedObject = null;
 		lastTickReset = ticks;
 	}
-	
-	
+
 	private void intelligentSkilling() {
 		switch (IaoxAIO.CURRENT_TASK.getAssignment()) {
 		case MINING:
@@ -106,7 +114,6 @@ public class IaoxIntelligence implements Runnable {
 
 		}
 	}
-
 
 	private void intelligentBreaking() {
 		if (break_handler.isEmpty()) {
@@ -125,14 +132,14 @@ public class IaoxIntelligence implements Runnable {
 		}
 
 	}
-	
+
 	private void intelligentMuleDeposit() {
-		if(ticks-lastMuleTrade > 10000 && IaoxAIO.random(100) == 50){
+		if (ticks - lastMuleTrade > 10000 && IaoxAIO.random(100) == 50 && script.getSkills().getDynamic(Skill.MINING) > 55) {
 			frame.newMessage("WE SHOULD MULE DEPOSIT");
 			IaoxAIO.shouldTrade = true;
 			lastMuleTrade = ticks;
 		}
-		
+
 	}
 
 	/*
@@ -257,8 +264,6 @@ public class IaoxIntelligence implements Runnable {
 			miningAssignment = similarAssignment;
 		} else if (amountOfWorldChanges < 2) {
 			changeWorld();
-		} else {
-			script.log("nothing we can do, we already changed world");
 		}
 
 	}
@@ -267,7 +272,7 @@ public class IaoxIntelligence implements Runnable {
 		scriptShouldRun = false;
 		if (script.getWorlds().isMembersWorld()) {
 			int currentWorld = script.getWorlds().getCurrentWorld();
-			script.getWorlds().hopToP2PWorld();
+			script.getWorlds().hop(getRandomP2PWorld());
 			new ConditionalSleep(6000, 12000) {
 				@Override
 				public boolean condition() throws InterruptedException {
@@ -282,13 +287,17 @@ public class IaoxIntelligence implements Runnable {
 				@Override
 				public boolean condition() throws InterruptedException {
 					sleeps(600);
-					return script.worlds.getCurrentWorld() != currentWorld2;
+					return script.worlds != null && script.worlds.getCurrentWorld() != currentWorld2;
 				}
 			}.sleep();
 		}
 		amountOfWorldChanges++;
 		frame.newMessage("Changed world");
 		scriptShouldRun = true;
+	}
+
+	private int getRandomP2PWorld() {
+		return Data.AVAILABLE_P2P_WORLDS[IaoxAIO.random(Data.AVAILABLE_P2P_WORLDS.length)];
 	}
 
 	private int getRandomF2PWorld() {
@@ -304,6 +313,10 @@ public class IaoxIntelligence implements Runnable {
 		}
 		return null;
 	}
+	
+	public static FightingAssignment getFightingAssignment() {
+		return fightingAssignment;
+	}
 
 	public static MiningAssignment getMiningAssignment() {
 		return miningAssignment;
@@ -312,7 +325,31 @@ public class IaoxIntelligence implements Runnable {
 	public void setMiningAssignment(MiningAssignment ass) {
 		miningAssignment = ass;
 	}
+	public void setFightingAssignment(FightingAssignment ass) {
+		fightingAssignment = ass;
+	}
 
+	public void getNewMiningAssignment() {
+		setMiningAssignment(im.getNewAssignment());
+	}
+	
+	public void getNewFightingAssignment() {
+		setFightingAssignment(cm.getNewAssignment());
+	}
+	
+	public static WoodCuttingAssignment getWCAssignment() {
+		return woodcuttingAssignment;
+	}
+	
+	public void getNewWCAssignment() {
+		setWCAssignment(WoodCuttingAssignment.NORMAL_TREE_DRAYNOR_LOCATION_1);
+		
+	}
+
+	private void setWCAssignment(WoodCuttingAssignment woodcuttingAssignment) {
+		this.woodcuttingAssignment = woodcuttingAssignment;
+		
+	}
 
 	private void generateNewBreaks() {
 		int breaks = IaoxAIO.random(4, 7);
@@ -320,7 +357,7 @@ public class IaoxIntelligence implements Runnable {
 			/*
 			 * Random breaks such as eating dinner etc
 			 */
-			break_handler.add(new RandomBreak(IaoxAIO.random(45, 75), IaoxAIO.random(5,25)));
+			break_handler.add(new RandomBreak(IaoxAIO.random(35, 56), IaoxAIO.random(5, 25)));
 		}
 
 		/*
@@ -354,14 +391,14 @@ public class IaoxIntelligence implements Runnable {
 			return true;
 		}
 	}
-	
+
 	private void scriptSleep(int random) {
 		frame.newMessage("Lets sleep for: " + random / 1000 + " seconds.");
 		scriptShouldRun = false;
 		sleeps(random);
 		scriptShouldRun = true;
 	}
-	
+
 	public LinkedList<RandomBreak> getBreakHandler() {
 		return break_handler;
 	}
@@ -369,19 +406,33 @@ public class IaoxIntelligence implements Runnable {
 	public int getLeftSleepTime() {
 		return (int) ((sleepTimeStartTime + sleepTime) - System.currentTimeMillis());
 	}
-	
+
 	public int getCurrentPlayTime() {
 		return ticks - current_session_start;
 	}
-	
+
 	public int getTicks() {
 		return ticks;
 	}
-	
+
 	public void destroy() {
 		t.interrupt();
 		t.interrupt();
 	}
-	
+
+	public static boolean lastClickedObject(RS2Object object) {
+		if(lastClickedObject == null){
+			lastClickedObject = object;
+			return false;
+		}
+		Boolean bool = lastClickedObject.equals(object);
+		lastClickedObject = object;
+		return bool;
+	}
+
+
+
+
+
 
 }

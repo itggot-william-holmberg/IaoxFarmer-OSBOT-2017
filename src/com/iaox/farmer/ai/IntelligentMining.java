@@ -25,6 +25,9 @@ public class IntelligentMining {
 		 * Switch between these factors to prevent "typical bot behaviour: camp same spot for 20 hours"
 		 * 
 		 */
+		if(getMiningLevel() < 41){
+			return MiningAssignment.TIN_ORE_RIMMINGTON;
+		}
 		return MiningAssignment.IRON_ORE_RIMMINGTON;
 	}
 	

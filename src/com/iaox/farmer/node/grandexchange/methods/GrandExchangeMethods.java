@@ -11,6 +11,7 @@ import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.data.Areas;
+import com.iaox.farmer.data.Data;
 import com.iaox.farmer.data.GrandExchangeData;
 import com.iaox.farmer.data.items.IaoxItem;
 
@@ -85,7 +86,14 @@ public class GrandExchangeMethods {
 				script.log("lets call mule");
 				// call mule
 				IaoxAIO.shouldTrade = true;
-				IaoxAIO.coinsNeeded = getItemPrice(item);
+				int coinsNeeded = 0;
+				for (IaoxItem coinItem : GrandExchangeData.ITEMS_TO_BUY_LIST) {
+					coinsNeeded += getItemPrice(coinItem);
+				}
+				for (IaoxItem coinItem : Data.WITHDRAW_LIST) {
+					coinsNeeded += getItemPrice(coinItem);
+				}
+				IaoxAIO.coinsNeeded = coinsNeeded;
 				break;
 			}
 		}

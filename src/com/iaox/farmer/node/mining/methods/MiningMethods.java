@@ -38,15 +38,14 @@ public class MiningMethods {
 	 */
 	public Area getBankArea() {
 		if (getAssignment() != null) {
-			if(playerInArea(MiningAreas.PORT_SARIM_DEPOSIT_AREA)){
+			if (playerInArea(MiningAreas.PORT_SARIM_DEPOSIT_AREA)) {
 				return getAssignment().getBankArea();
 			}
-			
+
 			if (getAssignment().getMiningArea().equals(MiningAreas.RIMMINGTON_MINING_AREA) && playerHasPickaxe()) {
 				return getAssignment().getBankArea();
 			}
-			
-			
+
 			return WebBank.getNearest(script).getArea();
 		}
 		return null;
@@ -57,14 +56,14 @@ public class MiningMethods {
 	}
 
 	public boolean playerHasPickaxe() {
-		if(playerInArea(MiningAreas.PORT_SARIM_DEPOSIT_AREA)){
+		if (playerInArea(MiningAreas.PORT_SARIM_DEPOSIT_AREA)) {
 			return true;
 		}
-		
+
 		if (script.equipment.isWieldingWeapon(getPickaxe())) {
 			return true;
-		} 
-		
+		}
+
 		if (script.inventory.contains(getPickaxe())) {
 			return !canEquipPickaxe();
 		}
@@ -72,41 +71,69 @@ public class MiningMethods {
 	}
 
 	private boolean canEquipPickaxe() {
-		if (getPickaxe().equals(IaoxItem.MITHRIL_PICKAXE.getName())
-				&& script.getSkills().getDynamic(Skill.ATTACK) >= 20) {
-			if(!script.bank.isOpen()){
-				script.widgets.closeOpenInterface();
-				script.inventory.interact("Wield", getPickaxe());
-			}else{
-				script.bank.close();
-			}
-			try {
-				IaoxAIO.sleep(2500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return true;
-		}
+		switch (getPickaxe()) {
 
-		if (getPickaxe().equals(IaoxItem.ADAMANT_PICKAXE.getName())
-				&& script.getSkills().getDynamic(Skill.ATTACK) >= 30) {
-			if(!script.bank.isOpen()){
-				script.widgets.closeOpenInterface();
-				script.inventory.interact("Wield", getPickaxe());
-			}else{
+		case "Bronze pickaxe":
+			if (script.bank.isOpen()) {
 				script.bank.close();
+				return true;
+			} else {
+				script.inventory.interact("Wield", getPickaxe());
+				sleep(2500);
+				return true;
 			}
-			try {
-				IaoxAIO.sleep(2500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return true;
-		}
 
+		case "Mithril pickaxe":
+			if (script.getSkills().getDynamic(Skill.ATTACK) < 20) {
+				return false;
+			} else if (script.bank.isOpen()) {
+				script.bank.close();
+				sleep(2500);
+				return true;
+			} else {
+				script.inventory.interact("Wield", getPickaxe());
+				sleep(2500);
+				return true;
+			}
+
+		case "Adamant pickaxe":
+			if (script.getSkills().getDynamic(Skill.ATTACK) < 30) {
+				return false;
+			} else if (script.bank.isOpen()) {
+				script.bank.close();
+				sleep(2500);
+				return true;
+			} else {
+				script.inventory.interact("Wield", getPickaxe());
+				sleep(2500);
+				return true;
+			}
+
+		case "Rune pickaxe":
+			if (script.getSkills().getDynamic(Skill.ATTACK) < 40) {
+				return false;
+			} else if (script.bank.isOpen()) {
+				script.bank.close();
+				sleep(2500);
+				return true;
+			} else {
+				script.inventory.interact("Wield", getPickaxe());
+				sleep(2500);
+				return true;
+			}
+
+		}
 		return false;
+	}
+
+	private void sleep(int i) {
+		try {
+			script.sleep(i);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	public String getPickaxe() {

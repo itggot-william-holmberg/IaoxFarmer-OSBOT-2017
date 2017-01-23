@@ -55,6 +55,7 @@ public class DepositBank extends Node {
 					}.sleep();
 				} else {
 					script.bank.withdrawAll(item.getName());
+					GrandExchangeData.SHOULD_COLLECT = true;
 					new ConditionalSleep(5000) {
 						@Override
 						public boolean condition() throws InterruptedException {
@@ -64,7 +65,6 @@ public class DepositBank extends Node {
 					}.sleep();
 				}
 			}
-			GrandExchangeData.SHOULD_COLLECT = true;
 		}
 
 	}

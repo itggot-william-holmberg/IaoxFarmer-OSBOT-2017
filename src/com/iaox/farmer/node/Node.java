@@ -5,11 +5,13 @@ import org.osbot.rs07.script.Script;
 
 import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.ai.IaoxIntelligence;
+import com.iaox.farmer.node.combat.methods.CombatMethods;
 import com.iaox.farmer.node.grandexchange.methods.GrandExchangeMethods;
 import com.iaox.farmer.node.methods.BankingMethods;
 import com.iaox.farmer.node.methods.MuleMethods;
 import com.iaox.farmer.node.methods.WalkingMethods;
 import com.iaox.farmer.node.mining.methods.MiningMethods;
+import com.iaox.farmer.node.woodcutting.methods.WoodcuttingMethods;
 
 public abstract class Node {
 
@@ -19,6 +21,8 @@ public abstract class Node {
 	protected WalkingMethods walkingMethods;
 	protected GrandExchangeMethods geMethods;
 	protected MuleMethods muleMethods;
+	protected CombatMethods combatMethods;
+	protected WoodcuttingMethods wcMethods;
 	
 	public Node init(Script script){
 		this.script = script;
@@ -27,6 +31,8 @@ public abstract class Node {
 		this.walkingMethods = new WalkingMethods(script);
 		this.geMethods = new GrandExchangeMethods(script);
 		this.muleMethods = new MuleMethods(script);
+		this.combatMethods = new CombatMethods(script);
+		this.wcMethods = new WoodcuttingMethods(script);
 		return this;
 	}
 	

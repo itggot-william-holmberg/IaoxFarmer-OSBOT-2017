@@ -3,7 +3,11 @@ package com.iaox.farmer.assignment;
 import org.osbot.rs07.api.ui.Skill;
 
 public enum Assignment {
-	MINING(AssignmentType.SKILL, Skill.MINING);
+	MINING(AssignmentType.SKILL, Skill.MINING),
+	WOODCUTTING(AssignmentType.SKILL, Skill.WOODCUTTING),
+	STRENGTH(AssignmentType.COMBAT, Skill.STRENGTH),
+	ATTACK(AssignmentType.COMBAT, Skill.ATTACK),
+	DEFENCE(AssignmentType.COMBAT, Skill.DEFENCE);
 	
 	private AssignmentType type;
 	private Skill skill;

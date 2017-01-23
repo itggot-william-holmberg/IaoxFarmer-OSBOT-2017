@@ -3,7 +3,6 @@ package com.iaox.farmer;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,18 +10,21 @@ import java.util.concurrent.TimeUnit;
 
 import org.osbot.rs07.api.model.Player;
 import org.osbot.rs07.api.ui.Skill;
-import org.osbot.rs07.api.util.ExperienceTracker;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.ai.IaoxIntelligence;
-import com.iaox.farmer.data.Areas;
+import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.data.GrandExchangeData;
 import com.iaox.farmer.data.items.IaoxItem;
 import com.iaox.farmer.events.LoginEvent;
 import com.iaox.farmer.frame.Gui;
 import com.iaox.farmer.node.Node;
+import com.iaox.farmer.node.combat.BankFight;
+import com.iaox.farmer.node.combat.Fight;
+import com.iaox.farmer.node.combat.WalkToBankFromFight;
+import com.iaox.farmer.node.combat.WalkToFight;
 import com.iaox.farmer.node.grandexchange.BuyItem;
 import com.iaox.farmer.node.grandexchange.GrandExchangeBank;
 import com.iaox.farmer.node.grandexchange.WalkToGrandExchange;
@@ -33,6 +35,10 @@ import com.iaox.farmer.node.mining.WalkToMiningLocation;
 import com.iaox.farmer.node.mule.Deposit;
 import com.iaox.farmer.node.mule.DepositBank;
 import com.iaox.farmer.node.mule.SellItems;
+import com.iaox.farmer.node.woodcutting.WCAction;
+import com.iaox.farmer.node.woodcutting.WCBank;
+import com.iaox.farmer.node.woodcutting.WalkToWCBank;
+import com.iaox.farmer.node.woodcutting.WalkToWCLocation;
 import com.iaox.farmer.task.Task;
 import com.iaox.farmer.tcp.MuleThread;
 
@@ -41,10 +47,10 @@ public class IaoxAIO extends Script {
 
 	public static MuleThread muleThread;
 
-	public static int coinsNeeded = 0;
 	private int startCash;
-
+	public static int coinsNeeded = 0;
 	public static boolean shouldTrade = false;
+	public static boolean shouldWithdrawCash;
 
 	private String username;
 	private String password;
@@ -66,12 +72,11 @@ public class IaoxAIO extends Script {
 	public long timeStarted;
 	public long timeRan;
 
-	public ExperienceTracker xpTracker;
+	private int startXP = 0;
 
-	public static boolean shouldWithdrawCash;
+	private int xpGained;
 
 	public static boolean shouldThreadRun = true;
-	
 
 	@Override
 	public void onStart() throws InterruptedException {
@@ -80,23 +85,33 @@ public class IaoxAIO extends Script {
 		NODE_HANDLER = new ArrayList<Node>();
 		GRAND_EXCHANGE_NODE_HANDLER = new ArrayList<Node>();
 		MULE_NODE_HANDLER = new ArrayList<Node>();
-		
+
 		addGrandExchangeData();
 
 		username = getBot().getUsername();
-		password = "pass123";
+		switch (username) {
+		case "firetorag667@mail.com":
+			password = "pass123";
+			break;
+		case "veit4@o.o":
+			password = "animeftw";
+			break;
+		default:
+			password = "boowoo123";
+			break;
+		}
 
 		muleThread = new MuleThread(this);
 
 		gui = new Gui();
 		guiWait = true;
+		
 		login();
 
 		ii = new IaoxIntelligence();
 		ii.start(this);
 
 		timeStarted = System.currentTimeMillis();
-		this.xpTracker = getExperienceTracker();
 
 		GrandExchangeData.ITEMS_TO_BUY_LIST = new ArrayList<IaoxItem>();
 
@@ -104,7 +119,6 @@ public class IaoxAIO extends Script {
 
 	@Override
 	public int onLoop() {
-		log("loop");
 		handleGui();
 		if (shouldTrade) {
 			handleTrade();
@@ -157,6 +171,7 @@ public class IaoxAIO extends Script {
 			newTask();
 		} else if (CURRENT_TASK.isCompleted(this)) {
 			TASK_HANDLER.remove(CURRENT_TASK);
+			CURRENT_TASK = null;
 		} else {
 			handleNode();
 		}
@@ -167,8 +182,9 @@ public class IaoxAIO extends Script {
 			CURRENT_TASK = TASK_HANDLER.getFirst();
 			updateNodes();
 		} else {
-			// generate new task in the future
-			stop();
+			Assignment ass = Assignment.values()[random(Assignment.values().length)];
+			TASK_HANDLER.add(new Task(ass, getSkills().getDynamic(ass.getSkill())+1, ass.getSkill()));
+			
 		}
 	}
 
@@ -186,6 +202,7 @@ public class IaoxAIO extends Script {
 			skillSwitch();
 			break;
 		case COMBAT:
+			combatSwitch();
 			break;
 		case QUEST:
 			questSwitch();
@@ -194,6 +211,14 @@ public class IaoxAIO extends Script {
 			break;
 		}
 
+	}
+
+	private void combatSwitch() {
+		ii.getNewFightingAssignment();
+		NODE_HANDLER.add(new BankFight().init(this));
+		NODE_HANDLER.add(new Fight().init(this));
+		NODE_HANDLER.add(new WalkToBankFromFight().init(this));
+		NODE_HANDLER.add(new WalkToFight().init(this));		
 	}
 
 	private void handleGui() {
@@ -213,11 +238,20 @@ public class IaoxAIO extends Script {
 	private void skillSwitch() {
 		switch (CURRENT_TASK.getAssignment()) {
 		case MINING:
-			xpTracker.start(Skill.MINING);
+			startXP = getSkills().getExperience(Skill.MINING);
+			ii.getNewMiningAssignment();
 			NODE_HANDLER.add(new MiningBank().init(this));
 			NODE_HANDLER.add(new WalkToMiningBank().init(this));
 			NODE_HANDLER.add(new WalkToMiningLocation().init(this));
 			NODE_HANDLER.add(new MiningAction().init(this));
+			break;
+		case WOODCUTTING:
+			startXP = getSkills().getExperience(Skill.WOODCUTTING);
+			ii.getNewWCAssignment();
+			NODE_HANDLER.add(new WCAction().init(this));
+			NODE_HANDLER.add(new WalkToWCBank().init(this));
+			NODE_HANDLER.add(new WalkToWCLocation().init(this));
+			NODE_HANDLER.add(new WCBank().init(this));
 			break;
 		}
 	}
@@ -235,7 +269,7 @@ public class IaoxAIO extends Script {
 		GRAND_EXCHANGE_NODE_HANDLER.add(new WalkToGrandExchange().init(this));
 		GRAND_EXCHANGE_NODE_HANDLER.add(new GrandExchangeBank().init(this));
 	}
-	
+
 	private void addMuleDepositNodes() {
 
 		NODE_HANDLER.clear();
@@ -252,15 +286,14 @@ public class IaoxAIO extends Script {
 	}
 
 	private void handleNode() {
-		if (!NODE_HANDLER.isEmpty() && ii.scriptShouldRun) {
-			executeNode();
-		} else {
+		if (NODE_HANDLER.isEmpty()) {
 			updateNodes();
+		} else if (ii.scriptShouldRun) {
+			executeNode();
 		}
 	}
 
 	private void executeNode() {
-		log("execute node");
 		if (client.isLoggedIn()) {
 			Boolean active = false;
 			for (Node node : NODE_HANDLER) {
@@ -291,9 +324,11 @@ public class IaoxAIO extends Script {
 			startNewThread();
 		} else if (!muleThread.isRunning() && !muleThread.getConnection()) {
 			logout("host is not available, lets logout and sleep until host is available");
+			sleeps(IaoxAIO.random(50000,60000));
 		} else if (muleThread.isRunning() && muleThread.getMule() == null) {
 			logout("Mule is not available, lets logout and sleep until mule is available");
 			logoutTab.logOut();
+			sleeps(IaoxAIO.random(50000,60000));
 		}
 	}
 
@@ -321,7 +356,6 @@ public class IaoxAIO extends Script {
 		}
 	}
 
-
 	private void handleMuleDepositNodes() {
 		if (!MULE_NODE_HANDLER.isEmpty()) {
 			executeMuleDepositNode();
@@ -329,7 +363,7 @@ public class IaoxAIO extends Script {
 			addMuleDepositNodes();
 		}
 	}
-	
+
 	private void executeMuleDepositNode() {
 		log("handle mule task");
 		Boolean active = false;
@@ -347,22 +381,6 @@ public class IaoxAIO extends Script {
 		if (!active) {
 			CURRENT_NODE = null;
 		}
-	}
-
-	private void withdrawCash() {
-		if(!Areas.GRAND_EXCHANGE_AREA.contains(myPlayer())){
-			log("webwalking to ge");
-			walking.webWalk(Areas.GRAND_EXCHANGE_AREA);
-		}else if(!bank.isOpen()){
-			try {
-				log("lets open bank");
-				bank.open();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
 	}
 
 	private void slaveTradeWithdraw() {
@@ -398,22 +416,6 @@ public class IaoxAIO extends Script {
 				}
 
 			}.sleep();
-		}
-	}
-
-	public void sleeps(int milli) {
-		try {
-			sleep(milli);
-		} catch (Exception e) {
-
-		}
-	}
-
-	public void sleeps(int milli, int milli2) {
-		try {
-			sleep(random(milli, milli2));
-		} catch (Exception e) {
-
 		}
 	}
 
@@ -466,10 +468,11 @@ public class IaoxAIO extends Script {
 		g.drawString("Current node: " + CURRENT_NODE, 50, 430);
 		g.drawString("Current action: " + CURRENT_ACTION, 50, 450);
 
-		if (xpTracker != null && xpTracker.getGainedXP(Skill.MINING) > 0) {
+		if (startXP > 0) {
 			g.setColor(Color.BLACK);
-			g.drawString("XP Gained: " + xpTracker.getGainedXP(Skill.MINING), 300, 410);
-			g.drawString("Current XP/h: " + xpTracker.getGainedXPPerHour(Skill.MINING), 300, 430);
+			xpGained = getSkills().getExperience(CURRENT_TASK.getAssignment().getSkill()) - startXP;
+			g.drawString("XP Gained: " + xpGained, 300, 410);
+			g.drawString("Current XP/h: " + getPerHour(xpGained, timeRan), 300, 430);
 		}
 
 		if (ii.getBreakHandler() != null) {
@@ -486,6 +489,35 @@ public class IaoxAIO extends Script {
 			}
 		}
 
+	}
+
+	public int getPerHour(int totalGainedInRunTime, long runTime) {
+		return (int) (totalGainedInRunTime * 3600000.0D / runTime);
+	}
+
+	public void sleeps(int milli) {
+		try {
+			sleep(milli);
+		} catch (Exception e) {
+
+		}
+	}
+
+	public void sleeps(int milli, int milli2) {
+		try {
+			sleep(random(milli, milli2));
+		} catch (Exception e) {
+
+		}
+	}
+
+	public static void realSleep(int milli) {
+		try {
+			Script.sleep(milli);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private String ft(long duration) {
@@ -516,14 +548,4 @@ public class IaoxAIO extends Script {
 		shouldThreadRun = false;
 		gui.frame.dispose();
 	}
-
-	public static void realSleep(int milli) {
-		try {
-			Script.sleep(milli);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 }

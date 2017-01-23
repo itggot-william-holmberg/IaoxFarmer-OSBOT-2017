@@ -120,6 +120,9 @@ public class Gui {
 					if (selectedTask.getAssignment().getType() == AssignmentType.SKILL
 							&& Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()) > 0) {
 						IaoxAIO.TASK_HANDLER.add(selectedTask);
+					}else if (selectedTask.getAssignment().getType() == AssignmentType.COMBAT
+							&& Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()) > 0) {
+						IaoxAIO.TASK_HANDLER.add(selectedTask);
 					}
 					i++;
 				}

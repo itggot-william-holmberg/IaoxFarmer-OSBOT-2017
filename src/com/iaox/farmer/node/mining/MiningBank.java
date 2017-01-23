@@ -18,6 +18,9 @@ public class MiningBank extends Node {
 	public void execute() {
 		switch (miningMethods.getAssignment()) {
 		case IRON_ORE_RIMMINGTON:
+		case IRON_ORE_RIMMINGTON_2:
+		case TIN_ORE_RIMMINGTON:
+		case GOLD_ORE_RIMMINGTON:
 			if (miningMethods.playerInArea(MiningAreas.PORT_SARIM_DEPOSIT_AREA)) {
 				depositBoxBanking();
 			}else{

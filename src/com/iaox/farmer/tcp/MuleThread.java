@@ -112,8 +112,7 @@ public class MuleThread implements Runnable {
 			script.log("lets update state from state");
 			message = in.readLine();
 			script.log(message);
-			while (t != null && !t.isInterrupted() && !message.equals(Protocol.BREAK)) {
-				script.log("tcp loop");
+			while (t != null && !t.isInterrupted() && message != null && !message.equals(Protocol.BREAK)) {
 				if (message.startsWith("Mule:")) {
 					mule = message.substring(5);
 					script.log("our mule is:" + mule);
@@ -125,7 +124,6 @@ public class MuleThread implements Runnable {
 				if (message.equals(Protocol.MULE_NOT_AVAILABLE)) {
 					script.log("no mule available, lets sleep for 60sec and check again!");
 					out.println(Protocol.BREAK);
-					IaoxAIO.sleep(IaoxAIO.random(50000,60000));
 					clientSocket.close();
 					break;
 				}
@@ -178,7 +176,7 @@ public class MuleThread implements Runnable {
 			}
 			clientSocket.close();
 			System.out.println("Connection has been closed");
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
