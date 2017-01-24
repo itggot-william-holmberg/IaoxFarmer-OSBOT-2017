@@ -12,7 +12,7 @@ import org.osbot.rs07.utility.ConditionalSleep;
 import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
-import com.iaox.farmer.assignment.woodcutting.WoodCuttingAssignment;
+import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
 import com.iaox.farmer.data.Data;
 import com.iaox.farmer.node.Node;
 import com.iaox.farmer.node.methods.Players;
@@ -25,10 +25,10 @@ public class IaoxIntelligence implements Runnable {
 
 	private static MiningAssignment miningAssignment;
 	private static FightingAssignment fightingAssignment;
-	private static WoodCuttingAssignment woodcuttingAssignment;
+	private static WoodcuttingAssignment woodcuttingAssignment;
 	private static Entity lastClickedObject;
 	private IntelligentMining im;
-	private IntelligentCombat cm;
+	private IntelligentCombat ic;
 	private int ticks;
 	private int lastTickReset;
 
@@ -43,6 +43,7 @@ public class IaoxIntelligence implements Runnable {
 	private long sleepTimeStartTime = 0;
 	private int sleepTime = 0;
 	private int lastMuleTrade;
+	private IntelligentWoodcutting iw;
 
 	public void start(Script script) {
 		this.script = script;
@@ -52,7 +53,8 @@ public class IaoxIntelligence implements Runnable {
 		frame.setVisible(true);
 
 		im = new IntelligentMining(this.script);
-		cm = new IntelligentCombat(this.script);
+		ic = new IntelligentCombat(this.script);
+		iw = new IntelligentWoodcutting(this.script);
 
 		break_handler = new LinkedList<RandomBreak>();
 		generateNewBreaks();
@@ -109,6 +111,8 @@ public class IaoxIntelligence implements Runnable {
 		case MINING:
 			intelligentMining();
 			break;
+		case WOODCUTTING:
+			intelligentWoodcutting();
 		default:
 			break;
 
@@ -240,6 +244,23 @@ public class IaoxIntelligence implements Runnable {
 	private void randomBankBehaviour() {
 		// frame.newMessage("New random bank behaviour");
 	}
+	
+	private void intelligentWoodcutting() {
+
+		/*
+		 * If we already have an assignment, do nothing. In the future, maybe
+		 * change assignment in the middle of the task For instance, if the
+		 * current spot is "overcrowded" - change world or spot
+		 */
+		if (woodcuttingAssignment == null) {
+			woodcuttingAssignment = iw.getNewAssignment();
+			frame.newMessage("Updated wc assignment");
+		} else if (script.myPlayer().isUnderAttack()
+				&& IaoxAIO.CURRENT_NODE != null && IaoxAIO.CURRENT_NODE.toString().equals("Woodcut")) {
+			script.log("we are under attack");
+			findBetterWoodcuttingAssignment();
+		}
+	}
 
 	private void intelligentMining() {
 
@@ -253,11 +274,11 @@ public class IaoxIntelligence implements Runnable {
 			frame.newMessage("Updated mining assignment");
 		} else if (players.playersInArea(miningAssignment.getObjectArea()) > 1
 				&& IaoxAIO.CURRENT_NODE.toString().equals("Mining")) {
-			findBetterAssignment();
+			findBetterMiningAssignment();
 		}
 	}
 
-	private void findBetterAssignment() {
+	private void findBetterMiningAssignment() {
 		MiningAssignment similarAssignment = getSimilarMiningAssignment();
 		if (similarAssignment != null && players.playersInArea(similarAssignment.getObjectArea()) == 0) {
 			script.log("There is a better area for this assignment! lets switch.");
@@ -267,6 +288,16 @@ public class IaoxIntelligence implements Runnable {
 		}
 
 	}
+	
+	private void findBetterWoodcuttingAssignment() {
+		WoodcuttingAssignment similarAssignment = iw.getSimilarAssignment(woodcuttingAssignment.getWCArea());
+		if (similarAssignment != null) {
+			script.log("There is a better area for this assignment! lets switch.");
+			woodcuttingAssignment = similarAssignment;
+			sleeps(10000);
+		}
+	}
+
 
 	private void changeWorld() {
 		scriptShouldRun = false;
@@ -334,19 +365,18 @@ public class IaoxIntelligence implements Runnable {
 	}
 	
 	public void getNewFightingAssignment() {
-		setFightingAssignment(cm.getNewAssignment());
+		setFightingAssignment(ic.getNewAssignment());
 	}
 	
-	public static WoodCuttingAssignment getWCAssignment() {
+	public static WoodcuttingAssignment getWCAssignment() {
 		return woodcuttingAssignment;
 	}
 	
 	public void getNewWCAssignment() {
-		setWCAssignment(WoodCuttingAssignment.NORMAL_TREE_DRAYNOR_LOCATION_1);
-		
+		setWCAssignment(iw.getNewAssignment());		
 	}
 
-	private void setWCAssignment(WoodCuttingAssignment woodcuttingAssignment) {
+	private void setWCAssignment(WoodcuttingAssignment woodcuttingAssignment) {
 		this.woodcuttingAssignment = woodcuttingAssignment;
 		
 	}

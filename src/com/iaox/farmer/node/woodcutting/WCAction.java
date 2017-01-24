@@ -1,6 +1,7 @@
 package com.iaox.farmer.node.woodcutting;
 
 import com.iaox.farmer.ai.IaoxIntelligence;
+import com.iaox.farmer.ai.IntelligentWoodcutting;
 import com.iaox.farmer.node.Node;
 
 public class WCAction extends Node{
@@ -12,6 +13,7 @@ public class WCAction extends Node{
 
 	@Override
 	public void execute() {
+		checkContinue();
 		if (!script.myPlayer().isAnimating()) {
 			wcMethods.cut();
 		} else {
@@ -26,7 +28,7 @@ public class WCAction extends Node{
 
 	@Override
 	public String toString() {
-		return "Cutting a tree";
+		return "Woodcut";
 	}
 
 

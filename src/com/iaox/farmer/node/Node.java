@@ -54,5 +54,29 @@ public abstract class Node {
 			e.printStackTrace();
 		}
 	}
+	
+	public void clickContinue() {
+		script.getDialogues().clickContinue();
+		try {
+			script.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean continueMessageIsVisible() {
+		if (script.widgets.getWidgetContainingText("Click here to continue") != null) {
+			return true;
+		}
+		return false;
+	}
+
+	public void checkContinue() {
+		if (continueMessageIsVisible()) {
+			clickContinue();
+		}
+		return;
+	}
 
 }

@@ -71,12 +71,10 @@ public class CombatMethods {
 			if (item == null) {
 				// item is null because there is no required item to wear.
 			} else if (script.equipment.contains(item.getName())) {
-				script.log("we have the current item: " + item.getName());
 			} else if (script.inventory.contains(item.getName())) {
 				Item inventoryItem = script.inventory.getItem(item.getName());
 				equipItem(inventoryItem);
 			} else if (!Data.WITHDRAW_LIST.contains(item)) {
-				script.log("we do not have the item: " + item.getName());
 				Data.WITHDRAW_LIST.add(item);
 				bool = false;
 			} else {

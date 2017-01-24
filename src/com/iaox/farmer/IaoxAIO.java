@@ -90,11 +90,8 @@ public class IaoxAIO extends Script {
 
 		username = getBot().getUsername();
 		switch (username) {
-		case "firetorag667@mail.com":
-			password = "pass123";
-			break;
-		case "veit4@o.o":
-			password = "animeftw";
+		case "rebeccaabbe@clayvolatile.tk":
+			password = "bella";
 			break;
 		default:
 			password = "boowoo123";
@@ -215,6 +212,7 @@ public class IaoxAIO extends Script {
 
 	private void combatSwitch() {
 		ii.getNewFightingAssignment();
+		startXP = getSkills().getExperience(CURRENT_TASK.getAssignment().getSkill());
 		NODE_HANDLER.add(new BankFight().init(this));
 		NODE_HANDLER.add(new Fight().init(this));
 		NODE_HANDLER.add(new WalkToBankFromFight().init(this));
@@ -240,6 +238,7 @@ public class IaoxAIO extends Script {
 		case MINING:
 			startXP = getSkills().getExperience(Skill.MINING);
 			ii.getNewMiningAssignment();
+			
 			NODE_HANDLER.add(new MiningBank().init(this));
 			NODE_HANDLER.add(new WalkToMiningBank().init(this));
 			NODE_HANDLER.add(new WalkToMiningLocation().init(this));
@@ -248,6 +247,7 @@ public class IaoxAIO extends Script {
 		case WOODCUTTING:
 			startXP = getSkills().getExperience(Skill.WOODCUTTING);
 			ii.getNewWCAssignment();
+			
 			NODE_HANDLER.add(new WCAction().init(this));
 			NODE_HANDLER.add(new WalkToWCBank().init(this));
 			NODE_HANDLER.add(new WalkToWCLocation().init(this));
