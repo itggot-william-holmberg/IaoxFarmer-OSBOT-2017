@@ -1,6 +1,8 @@
 package com.iaox.farmer.ai;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.osbot.rs07.api.model.Entity;
 import org.osbot.rs07.api.model.RS2Object;
@@ -10,12 +12,19 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.IaoxAIO;
+import com.iaox.farmer.ai.skills.IntelligentAgility;
+import com.iaox.farmer.ai.skills.IntelligentCombat;
+import com.iaox.farmer.ai.skills.IntelligentMining;
+import com.iaox.farmer.ai.skills.IntelligentWoodcutting;
+import com.iaox.farmer.assignment.Assignment;
+import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
 import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
 import com.iaox.farmer.data.Data;
 import com.iaox.farmer.node.Node;
 import com.iaox.farmer.node.methods.Players;
+import com.iaox.farmer.task.Task;
 
 public class IaoxIntelligence implements Runnable {
 
@@ -27,8 +36,12 @@ public class IaoxIntelligence implements Runnable {
 	private static FightingAssignment fightingAssignment;
 	private static WoodcuttingAssignment woodcuttingAssignment;
 	private static Entity lastClickedObject;
+	private static AgilityAssignment agilityAssignment;
 	private IntelligentMining im;
 	private IntelligentCombat ic;
+	private IntelligentWoodcutting iw;
+	private IntelligentAgility intelligentAgility;
+	
 	private int ticks;
 	private int lastTickReset;
 
@@ -38,12 +51,11 @@ public class IaoxIntelligence implements Runnable {
 
 	public boolean scriptShouldRun = true;
 
-	private LinkedList<RandomBreak> break_handler;
+	private List<RandomBreak> break_handler;
 	private int current_session_start = 0;
 	private long sleepTimeStartTime = 0;
 	private int sleepTime = 0;
 	private int lastMuleTrade;
-	private IntelligentWoodcutting iw;
 
 	public void start(Script script) {
 		this.script = script;
@@ -55,8 +67,9 @@ public class IaoxIntelligence implements Runnable {
 		im = new IntelligentMining(this.script);
 		ic = new IntelligentCombat(this.script);
 		iw = new IntelligentWoodcutting(this.script);
+		intelligentAgility = new IntelligentAgility(this.script);
 
-		break_handler = new LinkedList<RandomBreak>();
+		break_handler = new ArrayList<RandomBreak>();
 		generateNewBreaks();
 
 		if (t == null) {
@@ -72,7 +85,6 @@ public class IaoxIntelligence implements Runnable {
 			if (ticks - lastTickReset > IaoxAIO.random(180, 350)) {
 				resetVariables();
 			}
-			
 
 			if (script.client.isLoggedIn()) {
 
@@ -83,7 +95,7 @@ public class IaoxIntelligence implements Runnable {
 				if (IaoxAIO.CURRENT_NODE != null && IaoxAIO.CURRENT_NODE.safeToInterrupt() && !IaoxAIO.shouldTrade) {
 					randomBehaviour();
 					intelligentBreaking();
-					//intelligentMuleDeposit();
+					// intelligentMuleDeposit();
 				}
 			} else {
 				intelligentBreaking();
@@ -123,7 +135,7 @@ public class IaoxIntelligence implements Runnable {
 		if (break_handler.isEmpty()) {
 			generateNewBreaks();
 		} else {
-			RandomBreak nextBreak = break_handler.getFirst();
+			RandomBreak nextBreak = break_handler.get(0);
 			if (nextBreak.getPlayTime() < (getCurrentPlayTime() / 60)) {
 				/*
 				 * if the break is successfully executed we have to remove it
@@ -138,7 +150,8 @@ public class IaoxIntelligence implements Runnable {
 	}
 
 	private void intelligentMuleDeposit() {
-		if (ticks - lastMuleTrade > 10000 && IaoxAIO.random(100) == 50 && script.getSkills().getDynamic(Skill.MINING) > 55) {
+		if (ticks - lastMuleTrade > 10000 && IaoxAIO.random(100) == 50
+				&& script.getSkills().getStatic(Skill.MINING) > 55) {
 			frame.newMessage("WE SHOULD MULE DEPOSIT");
 			IaoxAIO.shouldTrade = true;
 			lastMuleTrade = ticks;
@@ -244,7 +257,7 @@ public class IaoxIntelligence implements Runnable {
 	private void randomBankBehaviour() {
 		// frame.newMessage("New random bank behaviour");
 	}
-	
+
 	private void intelligentWoodcutting() {
 
 		/*
@@ -255,8 +268,8 @@ public class IaoxIntelligence implements Runnable {
 		if (woodcuttingAssignment == null) {
 			woodcuttingAssignment = iw.getNewAssignment();
 			frame.newMessage("Updated wc assignment");
-		} else if (script.myPlayer().isUnderAttack()
-				&& IaoxAIO.CURRENT_NODE != null && IaoxAIO.CURRENT_NODE.toString().equals("Woodcut")) {
+		} else if (script.myPlayer().isUnderAttack() && IaoxAIO.CURRENT_NODE != null
+				&& IaoxAIO.CURRENT_NODE.toString().equals("Woodcut")) {
 			script.log("we are under attack");
 			findBetterWoodcuttingAssignment();
 		}
@@ -288,16 +301,15 @@ public class IaoxIntelligence implements Runnable {
 		}
 
 	}
-	
+
 	private void findBetterWoodcuttingAssignment() {
-		WoodcuttingAssignment similarAssignment = iw.getSimilarAssignment(woodcuttingAssignment.getWCArea());
+		WoodcuttingAssignment similarAssignment = iw.getSimilarAssignment(woodcuttingAssignment.getWCArea(), woodcuttingAssignment.getRequiredLevel());
 		if (similarAssignment != null) {
 			script.log("There is a better area for this assignment! lets switch.");
 			woodcuttingAssignment = similarAssignment;
 			sleeps(10000);
 		}
 	}
-
 
 	private void changeWorld() {
 		scriptShouldRun = false;
@@ -344,7 +356,7 @@ public class IaoxIntelligence implements Runnable {
 		}
 		return null;
 	}
-	
+
 	public static FightingAssignment getFightingAssignment() {
 		return fightingAssignment;
 	}
@@ -356,6 +368,7 @@ public class IaoxIntelligence implements Runnable {
 	public void setMiningAssignment(MiningAssignment ass) {
 		miningAssignment = ass;
 	}
+
 	public void setFightingAssignment(FightingAssignment ass) {
 		fightingAssignment = ass;
 	}
@@ -363,21 +376,30 @@ public class IaoxIntelligence implements Runnable {
 	public void getNewMiningAssignment() {
 		setMiningAssignment(im.getNewAssignment());
 	}
-	
+
 	public void getNewFightingAssignment() {
 		setFightingAssignment(ic.getNewAssignment());
 	}
-	
+
 	public static WoodcuttingAssignment getWCAssignment() {
 		return woodcuttingAssignment;
 	}
-	
+
 	public void getNewWCAssignment() {
-		setWCAssignment(iw.getNewAssignment());		
+		setWCAssignment(iw.getNewAssignment());
 	}
 
 	private void setWCAssignment(WoodcuttingAssignment woodcuttingAssignment) {
 		this.woodcuttingAssignment = woodcuttingAssignment;
+
+	}
+	
+	public static AgilityAssignment getAgilityAssignment() {
+		return agilityAssignment;
+	}
+	
+	public void getNewAgilityAssignment() {
+		this.agilityAssignment = intelligentAgility.getNewAssignment();
 		
 	}
 
@@ -387,7 +409,7 @@ public class IaoxIntelligence implements Runnable {
 			/*
 			 * Random breaks such as eating dinner etc
 			 */
-			break_handler.add(new RandomBreak(IaoxAIO.random(35, 56), IaoxAIO.random(5, 25)));
+			break_handler.add(new RandomBreak(IaoxAIO.random(35, 56), IaoxAIO.random(5, 25), generateNewTask()));
 		}
 
 		/*
@@ -429,7 +451,7 @@ public class IaoxIntelligence implements Runnable {
 		scriptShouldRun = true;
 	}
 
-	public LinkedList<RandomBreak> getBreakHandler() {
+	public List<RandomBreak> getBreakHandler() {
 		return break_handler;
 	}
 
@@ -451,7 +473,7 @@ public class IaoxIntelligence implements Runnable {
 	}
 
 	public static boolean lastClickedObject(RS2Object object) {
-		if(lastClickedObject == null){
+		if (lastClickedObject == null) {
 			lastClickedObject = object;
 			return false;
 		}
@@ -460,9 +482,137 @@ public class IaoxIntelligence implements Runnable {
 		return bool;
 	}
 
+	public Task generateNewTask() {
+		Assignment assignment = getRandomAssignment();
+		int levelGoal = getLevelGoal(assignment);
+		return new Task(assignment, levelGoal, assignment.getSkill());
+	}
 
+	private int getLevelGoal(Assignment assignment) {
+		int level = script.getSkills().getStatic(assignment.getSkill());
+		switch (assignment) {
+		case ATTACK:
+		case DEFENCE:
+			if (level < 10) {
+				return level + 7 + IaoxAIO.random(0, 7);
+			}
+			if (level < 20) {
+				return level + 5 + IaoxAIO.random(0, 5);
+			}
+			if (level < 30) {
+				return level + 3 + IaoxAIO.random(0, 3);
+			}
+			if (level < 40) {
+				return level + 2 + IaoxAIO.random(0, 2);
+			}
+			if (level < 50) {
+				return level + 1 + IaoxAIO.random(0, 2);
+			}
+			return level + 1;
+			
+		case AGILITY:
+			if (level < 30) {
+				return 30;
+			}
+			if (level < 40) {
+				return level + 5 + IaoxAIO.random(0, 5);
+			}
+			if (level < 50) {
+				return level + 3 + IaoxAIO.random(0, 3);
+			}
+			if (level < 60) {
+				return level + 2 + IaoxAIO.random(0, 2);
+			}
+			if (level < 70) {
+				return level + 1 + IaoxAIO.random(0, 2);
+			}
+			return level + 1;
 
+		case STRENGTH:
+		case WOODCUTTING:
+			if (level < 10) {
+				return level + 10 + IaoxAIO.random(0, 10);
+			}
+			if (level < 20) {
+				return level + 7 + IaoxAIO.random(0, 7);
+			}
+			if (level < 30) {
+				return level + 6 + IaoxAIO.random(0, 3);
+			}
+			if (level < 40) {
+				return level + 5 + IaoxAIO.random(0, 3);
+			}
+			if (level < 50) {
+				return level + 4 + IaoxAIO.random(0, 2);
+			}
+			if (level < 60) {
+				return level + 2 + IaoxAIO.random(0, 2);
+			}
+			if (level < 70) {
+				return level + 1 + IaoxAIO.random(0, 1);
+			}
+			return level + 1;
 
+		case MINING:
+			if (level < 10) {
+				return level + 5 + IaoxAIO.random(0, 5);
+			}
+			if (level < 20) {
+				return level + 3 + IaoxAIO.random(0, 3);
+			}
+			if (level < 30) {
+				return level + 2 + IaoxAIO.random(0, 3);
+			}
+			if (level < 40) {
+				return level + 1 + IaoxAIO.random(0, 2);
+			}
+			return level + 1 + IaoxAIO.random(0, 1);
+		}
+		
+		
+		return level + 1;
+	}
 
+	public Assignment getRandomAssignment() {
+		int task = IaoxAIO.random(1, 6);
+		Assignment ass = null;
+		switch (task) {
+		case 1:
+		case 2:
+		case 3:
+			return getRandomCombatAssignment();
+		case 4:
+			return Assignment.MINING;
+		case 5:
+			return Assignment.WOODCUTTING;
+		case 6:
+			if(script.worlds.isMembersWorld()){
+				return Assignment.AGILITY;
+			}
+			return getRandomAssignment();
+		default:
+			return Assignment.WOODCUTTING;
+		}
+	}
 
+	public Assignment getRandomCombatAssignment() {
+		int task = IaoxAIO.random(1, 3);
+		if (script.getSkills().getStatic(Skill.ATTACK) >= script.getSkills().getStatic(Skill.STRENGTH)) {
+			return Assignment.STRENGTH;
+		}
+		if (script.getSkills().getStatic(Skill.DEFENCE) >= script.getSkills().getStatic(Skill.ATTACK)) {
+			return Assignment.ATTACK;
+		}
+		switch (task) {
+		case 1:
+			return Assignment.ATTACK;
+		case 2:
+			return Assignment.STRENGTH;
+		case 3:
+			return Assignment.DEFENCE;
+		default:
+			return Assignment.STRENGTH;
+
+		}
+	}
 }

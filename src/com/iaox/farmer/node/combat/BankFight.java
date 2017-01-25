@@ -5,9 +5,8 @@ import java.util.Arrays;
 import com.iaox.farmer.data.Data;
 import com.iaox.farmer.node.Node;
 
-
 public class BankFight extends Node {
-	
+
 	public boolean active() {
 		if (combatMethods.playerInBankArea() && !combatMethods.playerIsReadyForFight()) {
 			return true;
@@ -17,15 +16,15 @@ public class BankFight extends Node {
 
 	@Override
 	public void execute() {
-		if (!Data.WITHDRAW_LIST.isEmpty()) {
-			combatMethods.withdrawNeededItems();
-		} else if(script.inventory.getEmptySlots() < 5){
+		if (script.inventory.getEmptySlots() < 15) {
 			bankingMethods.depositAll();
-		} else if(script.inventory.contains("coins")){
+		} else if (script.inventory.contains("coins")) {
 			bankingMethods.depositAll("Coins");
+		} else if (!Data.WITHDRAW_LIST.isEmpty()) {
+			combatMethods.withdrawNeededItems();
 		}
 	}
-	
+
 	public String toString() {
 		return "Banking --fight";
 	}

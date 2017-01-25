@@ -66,6 +66,38 @@ public class BankingMethods {
 			}
 		}
 	}
+	
+	public void withdraw(int amount, String itemName) {
+		if (!script.bank.isOpen()) {
+			try {
+				script.bank.open();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else if (script.inventory.isFull()) {
+			script.bank.depositAll();
+		} else if (script.bank.contains(itemName)) {
+			script.bank.withdraw(itemName, amount);
+			new ConditionalSleep(4000) {
+				@Override
+				public boolean condition() throws InterruptedException {
+					IaoxAIO.sleep(300);
+					return script.inventory.contains(itemName);
+				}
+			}.sleep();
+		} else {
+			script.log("We do not have the required item: " + itemName);
+			IaoxItem item = IaoxItem.getItem(itemName);
+			if (item != null) {
+				GrandExchangeData.ITEMS_TO_BUY_LIST.add(IaoxItem.getItem(itemName));
+			} else {
+				script.log("The required item: " + itemName + " does not exist in the Item database");
+				script.stop();
+				script.stop();
+			}
+		}
+	}
 
 	public void depositBoxDepositAllExcept(String item) {
 		if (script.depositBox.isOpen()) {

@@ -17,10 +17,16 @@ public class Fight extends Node {
 
 	@Override
 	public void execute() {
-		if (combatMethods.playerCanAttack()) {
-			combatMethods.fight();
-		} else {
+		if(combatMethods.playerHasToEat()){
+			script.log("lets eat");
+			combatMethods.eat();
+		} else if(!combatMethods.playerCanAttack()){
 			combatMethods.combatSleep();
+		} else if (combatMethods.lootIsAvailable()) {
+			combatMethods.loot();
+			script.log("loot!!");
+		} else {
+			combatMethods.fight();
 		}
 	}
 	

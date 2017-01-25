@@ -34,6 +34,8 @@ public class WCAreas {
 
 	public static Area OAK_TREE_DRAYNOR_LOCATION_1 = new Area(3113,3234,3119,3224);
 	public static Area OAK_TREE_DRAYNOR_LOCATION_2 = new Area(3113,3236,3133,3209);
+	public static Area OAK_TREE_DRAYNOR_LOCATION_3 = new Area(3208, 3251,3201,3238);
 
+	public static Area WILLOW_TREE_DRAYNOR_LOCATION_1 = new Area(3091,3225,3081,3239);
 
 }

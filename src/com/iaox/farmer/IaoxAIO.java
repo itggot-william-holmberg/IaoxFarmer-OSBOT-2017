@@ -16,11 +16,14 @@ import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.ai.IaoxIntelligence;
 import com.iaox.farmer.assignment.Assignment;
+import com.iaox.farmer.data.Data;
 import com.iaox.farmer.data.GrandExchangeData;
 import com.iaox.farmer.data.items.IaoxItem;
 import com.iaox.farmer.events.LoginEvent;
 import com.iaox.farmer.frame.Gui;
 import com.iaox.farmer.node.Node;
+import com.iaox.farmer.node.agility.gnome.GnomeCourse;
+import com.iaox.farmer.node.agility.gnome.WalkToTreeGnome;
 import com.iaox.farmer.node.combat.BankFight;
 import com.iaox.farmer.node.combat.Fight;
 import com.iaox.farmer.node.combat.WalkToBankFromFight;
@@ -76,6 +79,10 @@ public class IaoxAIO extends Script {
 
 	private int xpGained;
 
+	private long taskTimeRan;
+
+	private long taskTimeStarted;
+
 	public static boolean shouldThreadRun = true;
 
 	@Override
@@ -92,6 +99,9 @@ public class IaoxAIO extends Script {
 		switch (username) {
 		case "rebeccaabbe@clayvolatile.tk":
 			password = "bella";
+			break;
+		case "edgedrag@mail.com":
+			password = "pass123";
 			break;
 		default:
 			password = "boowoo123";
@@ -175,13 +185,14 @@ public class IaoxAIO extends Script {
 	}
 
 	private void newTask() {
+		Task breakHandlerTask = ii.getBreakHandler().get(0).getTask();
 		if (!TASK_HANDLER.isEmpty()) {
 			CURRENT_TASK = TASK_HANDLER.getFirst();
 			updateNodes();
-		} else {
-			Assignment ass = Assignment.values()[random(Assignment.values().length)];
-			TASK_HANDLER.add(new Task(ass, getSkills().getDynamic(ass.getSkill())+1, ass.getSkill()));
-			
+		} else if(breakHandlerTask != null && !breakHandlerTask.isCompleted(this) && Data.ONE_TASK_PER_PLAYTIME){
+			TASK_HANDLER.add(breakHandlerTask);	
+		}else {
+			TASK_HANDLER.add(ii.generateNewTask());
 		}
 	}
 
@@ -193,7 +204,7 @@ public class IaoxAIO extends Script {
 		if (!NODE_HANDLER.isEmpty()) {
 			NODE_HANDLER.clear();
 		}
-
+		taskTimeStarted = System.currentTimeMillis();
 		switch (CURRENT_TASK.getAssignment().getType()) {
 		case SKILL:
 			skillSwitch();
@@ -234,6 +245,7 @@ public class IaoxAIO extends Script {
 	}
 
 	private void skillSwitch() {
+		
 		switch (CURRENT_TASK.getAssignment()) {
 		case MINING:
 			startXP = getSkills().getExperience(Skill.MINING);
@@ -253,6 +265,12 @@ public class IaoxAIO extends Script {
 			NODE_HANDLER.add(new WalkToWCLocation().init(this));
 			NODE_HANDLER.add(new WCBank().init(this));
 			break;
+		case AGILITY:
+			startXP = getSkills().getExperience(Skill.AGILITY);
+			ii.getNewAgilityAssignment();
+			
+			NODE_HANDLER.add(new GnomeCourse().init(this));
+			NODE_HANDLER.add(new WalkToTreeGnome().init(this));
 		}
 	}
 
@@ -472,7 +490,8 @@ public class IaoxAIO extends Script {
 			g.setColor(Color.BLACK);
 			xpGained = getSkills().getExperience(CURRENT_TASK.getAssignment().getSkill()) - startXP;
 			g.drawString("XP Gained: " + xpGained, 300, 410);
-			g.drawString("Current XP/h: " + getPerHour(xpGained, timeRan), 300, 430);
+			taskTimeRan = System.currentTimeMillis() - taskTimeStarted;
+			g.drawString("Current XP/h: " + getPerHour(xpGained, taskTimeRan), 300, 430);
 		}
 
 		if (ii.getBreakHandler() != null) {
@@ -484,7 +503,7 @@ public class IaoxAIO extends Script {
 			} else {
 				g.drawString("Current sesson_playtime(ticks) " + ii.getCurrentPlayTime(), 50, 70);
 				g.drawString("We will break in "
-						+ (ii.getBreakHandler().getFirst().getPlayTime() - (ii.getCurrentPlayTime() / 60) + " minutes"),
+						+ (ii.getBreakHandler().get(0).getPlayTime() - (ii.getCurrentPlayTime() / 60) + " minutes"),
 						50, 90);
 			}
 		}

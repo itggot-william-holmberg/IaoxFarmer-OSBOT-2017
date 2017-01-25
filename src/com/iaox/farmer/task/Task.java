@@ -18,7 +18,7 @@ public class Task {
 	}
 
 	public boolean isCompleted(Script script) {
-		return script.getSkills().getDynamic(skill) >= levelGoal;
+		return script.getSkills().getStatic(skill) >= levelGoal;
 	}
 
 	public Assignment getAssignment() {

@@ -1,7 +1,7 @@
 package com.iaox.farmer.node.woodcutting;
 
 import com.iaox.farmer.ai.IaoxIntelligence;
-import com.iaox.farmer.ai.IntelligentWoodcutting;
+import com.iaox.farmer.ai.skills.IntelligentWoodcutting;
 import com.iaox.farmer.node.Node;
 
 public class WCAction extends Node{

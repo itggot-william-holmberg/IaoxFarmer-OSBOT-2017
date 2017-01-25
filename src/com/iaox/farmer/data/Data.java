@@ -13,6 +13,12 @@ public class Data {
 															336,338,341,342,343,344,346,350,
 																351,352,354,357,358,359,360,
 																	362,367,368,369,370,375,376,377};
+	
+	//generate one task for every playtime. Playtime is what comes before every break. Play x amount of time bla bla.
+	public static final boolean ONE_TASK_PER_PLAYTIME = true;
 	public static List<IaoxItem> WITHDRAW_LIST = new ArrayList<IaoxItem>();
+	
+	public  static boolean trainDefence = true;
+	public static long lastHomeTeleport;
 
 }
