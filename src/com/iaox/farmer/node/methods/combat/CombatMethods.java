@@ -1,5 +1,7 @@
 package com.iaox.farmer.node.methods.combat;
 
+import java.util.Arrays;
+
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.constants.Banks;
 import org.osbot.rs07.api.model.GroundItem;
@@ -41,10 +43,10 @@ public class CombatMethods {
 		NPC npc = getClosestFreeNPC(getAssignment().getName());
 	}
 
-	public NPC getClosestFreeNPC(String name) {
+	public NPC getClosestFreeNPC(String[] name) {
 		return script.getNpcs()
 				.closest(npc -> !npc.isUnderAttack() && npc.getHealthPercent() > 0 && npc.getInteracting() == null
-						&& npc.getName().equals(name) && npc.exists() && getAssignment().getFightArea().contains(npc)
+						&& Arrays.asList(name).contains(npc.getName()) && npc.exists() && getAssignment().getFightArea().contains(npc)
 						&& npc.hasAction("Attack"));
 	}
 
@@ -53,7 +55,7 @@ public class CombatMethods {
 	}
 
 	public Area getBankArea() {
-		if(Banks.GRAND_EXCHANGE.contains(script.myPlayer())){
+		if (Banks.GRAND_EXCHANGE.contains(script.myPlayer())) {
 			return Banks.GRAND_EXCHANGE;
 		}
 		if (getAssignment().getBankArea() != null) {
@@ -64,19 +66,22 @@ public class CombatMethods {
 	}
 
 	public boolean playerIsReadyForFight() {
-		return playerHasGear() && playerHasInventoryItems() && script.inventory.getAmount(995) < 50000 && script.inventory.getEmptySlotCount() != 0;
+		return playerHasGear() && playerHasInventoryItems() && script.inventory.getAmount(995) < 50000
+				&& script.inventory.getEmptySlotCount() != 0;
 	}
 
 	private boolean playerHasInventoryItems() {
 		boolean bool = true;
-		for (IaoxItem item : getAssignment().getInventory()) {
-			if (script.inventory.contains(item.getName())) {
-				// inv contains the item. good
-			} else if (!Data.WITHDRAW_LIST.contains(item)) {
-				Data.WITHDRAW_LIST.add(item);
-				bool = false;
-			} else {
-				bool = false;
+		if (getAssignment().getInventory() != null) {
+			for (IaoxItem item : getAssignment().getInventory()) {
+				if (script.inventory.contains(item.getName())) {
+					// inv contains the item. good
+				} else if (!Data.WITHDRAW_LIST.contains(item)) {
+					Data.WITHDRAW_LIST.add(item);
+					bool = false;
+				} else {
+					bool = false;
+				}
 			}
 		}
 		return bool;
@@ -137,10 +142,11 @@ public class CombatMethods {
 			return GearSetups.ADDY_SCIM;
 		}
 
-		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30 && script.worlds.isMembersWorld()) {
+		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30
+				&& script.worlds.isMembersWorld()) {
 			return GearSetups.RUNE_SCIM_P2P;
 		}
-		
+
 		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30) {
 			return GearSetups.RUNE_SCIM_F2P;
 		}
@@ -173,8 +179,6 @@ public class CombatMethods {
 	public boolean playerInFightArea() {
 		return getAssignment() != null && getAssignment().getFightArea().contains(script.myPlayer());
 	}
-	
-	
 
 	public void fight() {
 		IaoxAIO.CURRENT_ACTION = "Lets Attack!";
@@ -252,21 +256,21 @@ public class CombatMethods {
 			}
 		}.sleep();
 	}
-	
+
 	public void loot() {
 		IaoxAIO.CURRENT_ACTION = "Lets loot!";
 		GroundItem item = getClosestLoot();
 
-		if(item != null){
+		if (item != null) {
 			int amountBeforeLoot = (int) script.getInventory().getAmount(item.getId());
 			item.interact("Take");
-			new ConditionalSleep(300,5000){
+			new ConditionalSleep(300, 5000) {
 
 				@Override
 				public boolean condition() throws InterruptedException {
 					return script.inventory.getAmount(item.getId()) > amountBeforeLoot;
 				}
-				
+
 			}.sleep();
 		}
 	}

@@ -3,6 +3,7 @@ package com.iaox.farmer.ai.skills;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 
+import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
 
 public class IntelligentCombat {
@@ -16,6 +17,10 @@ public class IntelligentCombat {
 	public FightingAssignment getNewAssignment() {
 		//if Data.FightingAssignment != null return Data.fightingassignment
 		
+		if(IaoxAIO.CURRENT_TASK.getSpecifiedFightingAssignment() != null){
+			script.log("not null");
+			return IaoxAIO.CURRENT_TASK.getSpecifiedFightingAssignment();
+		}
 		
 		if(script.getSkills().getStatic(Skill.ATTACK) > 30  && 
 				script.getSkills().getStatic(Skill.STRENGTH) > 30 &&

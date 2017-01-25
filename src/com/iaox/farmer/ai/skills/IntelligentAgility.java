@@ -7,6 +7,7 @@ import java.util.List;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 
+import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
 
@@ -26,6 +27,9 @@ public class IntelligentAgility {
 		 * Switch between these factors to prevent "typical bot behaviour: camp same spot for 20 hours"
 		 * 
 		 */
+		if(IaoxAIO.CURRENT_TASK.getSpecifiedAgilityAssignment() != null && IaoxAIO.CURRENT_TASK.getSpecifiedAgilityAssignment().getRequiredLevel() <= getAgilityLevel()){
+			return IaoxAIO.CURRENT_TASK.getSpecifiedAgilityAssignment();
+		}
 		return AgilityAssignment.GNOME;
 
 	}

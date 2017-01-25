@@ -19,4 +19,10 @@ public class MiningAreas {
 	public static Area RIMMINGTON_IRON_2 = new Area(2968,3239,2970,3242);
 	
 	public static Area RIMMINGTON_GOLD_1 = new Area(2975,3234,2977,3233);
+	
+	public static Area VARROCK_WEST_MINING_AREA = new Area(3186,3379,3171,3364);
+	
+	public static Area VARROCK_TIN_1 = new Area(3181,3378,3183,3375);
+			
+	public static Area VARROCK_IRON_1 = new Area(3176,3366,3174,3368);
 }

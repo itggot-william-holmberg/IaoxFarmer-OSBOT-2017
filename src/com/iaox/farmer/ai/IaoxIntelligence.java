@@ -575,7 +575,7 @@ public class IaoxIntelligence implements Runnable {
 	}
 
 	public Assignment getRandomAssignment() {
-		int task = IaoxAIO.random(1, 6);
+		int task = IaoxAIO.random(1, 5);
 		Assignment ass = null;
 		switch (task) {
 		case 1:
@@ -586,11 +586,12 @@ public class IaoxIntelligence implements Runnable {
 			return Assignment.MINING;
 		case 5:
 			return Assignment.WOODCUTTING;
-		case 6:
+		/*case 6:
 			if(script.worlds.isMembersWorld()){
 				return Assignment.AGILITY;
 			}
 			return getRandomAssignment();
+			*/
 		default:
 			return Assignment.WOODCUTTING;
 		}
@@ -610,7 +611,11 @@ public class IaoxIntelligence implements Runnable {
 		case 2:
 			return Assignment.STRENGTH;
 		case 3:
+			if(Data.trainDefence){
 			return Assignment.DEFENCE;
+			}else{
+				return getRandomCombatAssignment();
+			}
 		default:
 			return Assignment.STRENGTH;
 

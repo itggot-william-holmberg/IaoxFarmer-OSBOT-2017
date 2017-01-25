@@ -8,6 +8,7 @@ import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 
+import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
 import com.iaox.farmer.data.Areas;
 
@@ -29,6 +30,10 @@ public class IntelligentWoodcutting {
 		 * "typical bot behaviour: camp same spot for 20 hours"
 		 * 
 		 */
+		
+		if(IaoxAIO.CURRENT_TASK.getSpecifiedWoodcuttingAssignment() != null && IaoxAIO.CURRENT_TASK.getSpecifiedWoodcuttingAssignment().getRequiredLevel() <= getWCLevel()){
+			return IaoxAIO.CURRENT_TASK.getSpecifiedWoodcuttingAssignment();
+		}
 		if (getClosestAvailableAssignment(getBestTree()) != null) {
 			return getClosestAvailableAssignment(getBestTree());
 		}

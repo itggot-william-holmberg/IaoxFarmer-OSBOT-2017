@@ -16,10 +16,11 @@ import com.iaox.farmer.data.items.IaoxItem;
 
 public enum FightingAssignment {
 
-	SEAGULL("Seagull", FightingAreas.SEAGULL_AREA),
-	CHAOS_DRUIDS_TAVERLEY("Chaos druid", FightingAreas.CHAOS_DRUIDS_TAVERLEY_AREA, Banks.FALADOR_WEST, new IaoxItem[]{IaoxItem.COOKED_TROUT, IaoxItem.FALADOR_TELEPORT}, Loot.CHAOS_DRUID_LOOT);
+	SEAGULL(new String[]{"Seagull"}, FightingAreas.SEAGULL_AREA),
+	COWS_LUMBRIDGE(new String[]{"Cow"}, FightingAreas.COW_LUMBRIDGE_AREA, Banks.LUMBRIDGE_UPPER, Loot.COW_LOOT),
+	CHAOS_DRUIDS_TAVERLEY(new String[]{"Chaos druid"}, FightingAreas.CHAOS_DRUIDS_TAVERLEY_AREA, Banks.FALADOR_WEST, new IaoxItem[]{IaoxItem.COOKED_TROUT, IaoxItem.FALADOR_TELEPORT}, Loot.CHAOS_DRUID_LOOT);
 	
-	private String name;
+	private String[] name;
 	private Area fightArea;
 	private Area bankArea;
 	private Area walkableBankArea;
@@ -28,18 +29,28 @@ public enum FightingAssignment {
 	private List<IaoxItem> inventoryItems;
 	private boolean shouldEat;
 
-	FightingAssignment(String name, Area fightArea) {
+	FightingAssignment(String[] name, Area fightArea) {
 		this.name = name;
 		this.fightArea = fightArea;
 	}
 	
-	FightingAssignment(String name, Area fightArea, Area bankArea) {
+	FightingAssignment(String[] name, Area fightArea, Area bankArea) {
 		 this.name = name;
 		 this.fightArea = fightArea;
 		 this.bankArea = bankArea;
 	}
 	
-	FightingAssignment(String name, Area fightArea, Area bankArea, IaoxItem[] inventoryItems, IaoxItem[] loot) {
+	FightingAssignment(String[] name, Area fightArea, Area bankArea, IaoxItem[] loot) {
+		 this.name = name;
+		 this.fightArea = fightArea;
+		 this.bankArea = bankArea;
+		 this.loot = new ArrayList<IaoxItem>();
+		 Arrays.asList(loot).forEach(item -> {
+			 this.loot.add(item);
+		 });
+	}
+	
+	FightingAssignment(String[] name, Area fightArea, Area bankArea, IaoxItem[] inventoryItems, IaoxItem[] loot) {
 		 this.name = name;
 		 this.fightArea = fightArea;
 		 this.bankArea = bankArea;
@@ -52,8 +63,8 @@ public enum FightingAssignment {
 			 this.loot.add(item);
 		 });
 	}
-	public String getName() {
-		return  name;
+	public String[] getName() {
+		return name;
 	}
 
 	public Area getFightArea() {

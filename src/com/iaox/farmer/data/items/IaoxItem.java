@@ -53,7 +53,10 @@ public enum IaoxItem {
 	GRIMY_DWARF_WEED("Grimy dwarf weed", 217),
 	GRIMY_LANTADYME("Grimy lantadyme", 2485),
 	GRIMY_CADANTINE("Grimy cadantine", 215),
-	GRIMY_RANARR_WEED("Grimy ranarr weed", 207);
+	GRIMY_RANARR_WEED("Grimy ranarr weed", 207),
+	
+	//other
+	COWHIDE("Cowhide", 1739);
 	
 	
 	private String itemName;

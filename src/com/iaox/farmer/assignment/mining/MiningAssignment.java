@@ -5,12 +5,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.api.map.constants.Banks;
 
 public enum MiningAssignment {
 	TIN_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_TIN_1, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.tinRockID, 1),
+	TIN_ORE_VARROCK(MiningAreas.VARROCK_WEST_MINING_AREA, MiningAreas.VARROCK_TIN_1, Banks.VARROCK_WEST, MiningObjectIDs.tinRockID, 1),
 	
 	IRON_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_IRON_1, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.ironRockID, 15),
 	IRON_ORE_RIMMINGTON_2(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_IRON_2, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.ironRockID, 15),
+	IRON_ORE_VARROCK(MiningAreas.VARROCK_WEST_MINING_AREA, MiningAreas.VARROCK_IRON_1, Banks.VARROCK_WEST, MiningObjectIDs.ironRockID, 15),
 
 	GOLD_ORE_RIMMINGTON(MiningAreas.RIMMINGTON_MINING_AREA, MiningAreas.RIMMINGTON_GOLD_1, MiningAreas.PORT_SARIM_DEPOSIT_AREA, MiningObjectIDs.goldRockID, 40);
 
