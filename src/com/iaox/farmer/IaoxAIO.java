@@ -494,7 +494,7 @@ public class IaoxAIO extends Script {
 			g.drawString("Current XP/h: " + getPerHour(xpGained, taskTimeRan), 300, 430);
 		}
 
-		if (ii.getBreakHandler() != null) {
+		if (ii.getBreakHandler() != null && Data.USE_BREAKS) {
 			g.setColor(Color.RED);
 			g.drawString("Current break_list " + ii.getBreakHandler(), 50, 50);
 			if (ii.getLeftSleepTime() > 1000) {

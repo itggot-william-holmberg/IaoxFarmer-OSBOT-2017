@@ -1,5 +1,6 @@
 package com.iaox.farmer.ai;
 
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -136,7 +137,7 @@ public class IaoxIntelligence implements Runnable {
 			generateNewBreaks();
 		} else {
 			RandomBreak nextBreak = break_handler.get(0);
-			if (nextBreak.getPlayTime() < (getCurrentPlayTime() / 60)) {
+			if (Data.USE_BREAKS && nextBreak.getPlayTime() < (getCurrentPlayTime() / 60)) {
 				/*
 				 * if the break is successfully executed we have to remove it
 				 * and then restart the session

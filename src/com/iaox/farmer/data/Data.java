@@ -20,5 +20,6 @@ public class Data {
 	
 	public  static boolean trainDefence = true;
 	public static long lastHomeTeleport;
+	public static boolean USE_BREAKS = true;
 
 }
