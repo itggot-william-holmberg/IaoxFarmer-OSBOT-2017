@@ -2,6 +2,8 @@ package com.iaox.farmer.node.combat;
 
 import org.osbot.rs07.api.ui.Skill;
 
+import com.iaox.farmer.data.Data;
+import com.iaox.farmer.data.items.IaoxItem;
 import com.iaox.farmer.node.Node;
 
 
@@ -23,7 +25,9 @@ public class Fight extends Node {
 			combatMethods.combatSleep();
 		} else if (combatMethods.lootIsAvailable()) {
 			combatMethods.loot();
-		} else {
+		} else if (Data.trainDefence && script.inventory.contains("Bones")) {
+			combatMethods.buryBones();
+		}  else {
 			combatMethods.fight();
 		}
 	}
@@ -34,7 +38,7 @@ public class Fight extends Node {
 
 	@Override
 	public boolean safeToInterrupt() {
-		return false;
+		return true;
 	}
 	
 

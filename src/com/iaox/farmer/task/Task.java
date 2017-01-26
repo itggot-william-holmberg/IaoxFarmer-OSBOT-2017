@@ -6,6 +6,7 @@ import org.osbot.rs07.script.Script;
 import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
+import com.iaox.farmer.assignment.fishing.FishingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
 import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
 
@@ -18,6 +19,7 @@ public class Task {
 	private WoodcuttingAssignment specifiedWoodcuttingAssignment;
 	private FightingAssignment specifiedFightingAssignment;
 	private AgilityAssignment specifiedAgilityAssignment;
+	private FishingAssignment specifiedFishingAssignment;
 
 	public Task(Assignment assignment, int levelGoal, Skill skill) {
 		this.assignment = assignment;
@@ -53,8 +55,17 @@ public class Task {
 		setSpecifiedAgilityAssignment(specifiedAssignment);
 	}
 	
+	public Task(Assignment assignment, int levelGoal, Skill skill, FishingAssignment specifiedAssignment) {
+		this.assignment = assignment;
+		this.levelGoal = levelGoal;
+		this.skill = skill;
+		setSpecifiedFishingAssignment(specifiedAssignment);
+	}
 	
 	
+	
+
+
 
 
 	public boolean isCompleted(Script script) {
@@ -96,6 +107,12 @@ public class Task {
 	}
 	public void setSpecifiedAgilityAssignment(AgilityAssignment specifiedAgilityAssignment) {
 		this.specifiedAgilityAssignment = specifiedAgilityAssignment;
+	}
+	public FishingAssignment getSpecifiedFishingAssignment() {
+		return specifiedFishingAssignment;
+	}
+	public void setSpecifiedFishingAssignment(FishingAssignment specifiedFishingAssignment) {
+		this.specifiedFishingAssignment = specifiedFishingAssignment;
 	}
 	
 	public String toString(){

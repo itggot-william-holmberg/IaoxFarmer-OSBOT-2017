@@ -6,6 +6,7 @@ import org.osbot.rs07.script.Script;
 import com.iaox.farmer.ai.IaoxIntelligence;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.agility.AgilityObstacle;
+import com.iaox.farmer.assignment.agility.GnomeData;
 import com.iaox.farmer.node.methods.AreaMethods;
 
 public class AgilityMethods {
@@ -28,6 +29,15 @@ public class AgilityMethods {
 				if (AreaMethods.playerInArea(obstacle.getArea(), script)) {
 					return true;
 				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean playerInGnomeAgilityArea(){
+		for (AgilityObstacle obstacle : GnomeData.GNOME_OBSTACLES) {
+			if (AreaMethods.playerInArea(obstacle.getArea(), script)) {
+				return true;
 			}
 		}
 		return false;

@@ -41,6 +41,10 @@ public class GrandExchangeBank extends Node {
 			}.sleep();
 		} else if (!GrandExchangeData.CURRENT_SELLABLE_ITEMS.isEmpty()) {
 			for (IaoxItem item : GrandExchangeData.CURRENT_SELLABLE_ITEMS) {
+				if(script.inventory.isFull()){
+					script.bank.depositAll();
+					sleeps(4000);
+				}
 				if (!script.bank.contains(item.getName())) {
 					GrandExchangeData.CURRENT_SELLABLE_ITEMS.remove(item);
 				} else if (script.bank.getWithdrawMode() != BankMode.WITHDRAW_NOTE) {

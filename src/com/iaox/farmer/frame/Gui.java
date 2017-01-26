@@ -21,6 +21,7 @@ import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.assignment.AssignmentType;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
+import com.iaox.farmer.assignment.fishing.FishingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
 import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
 import com.iaox.farmer.data.Data;
@@ -59,6 +60,8 @@ public class Gui {
 	private JComboBox<FightingAssignment> comboBoxFightingAssignment;
 
 	private JComboBox<AgilityAssignment> comboBoxAgilityAssignment;
+
+	private JComboBox<FishingAssignment> comboBoxFishingAssignment;
 
 	/**
 	 * Launch the application.
@@ -177,6 +180,14 @@ public class Gui {
 		}
 		panel.add(comboBoxAgilityAssignment);
 		comboBoxAgilityAssignment.setVisible(false);
+		
+		comboBoxFishingAssignment = new JComboBox<FishingAssignment>();
+		comboBoxFishingAssignment.setBounds(185, 123, 137, 27);
+		for (FishingAssignment ass : FishingAssignment.values()) {
+			comboBoxFishingAssignment.addItem(ass);
+		}
+		panel.add(comboBoxFishingAssignment);
+		comboBoxFishingAssignment.setVisible(false);
 
 		btnStart = new JButton("START");
 		btnStart.setBounds(48, 386, 488, 67);
@@ -244,7 +255,7 @@ public class Gui {
 		Task task = null;
 		switch (sourceList.getSelectedValue()) {
 		case AGILITY:
-			if (comboBoxAgilityAssignment.getSelectedItem() != null) {
+			if (chooseAssignmentCheckBox.isSelected() &&  comboBoxAgilityAssignment.getSelectedItem() != null) {
 				return new Task(sourceList.getSelectedValue(),
 						Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()),
 						sourceList.getSelectedValue().getSkill(),
@@ -252,7 +263,7 @@ public class Gui {
 			}
 			break;
 		case ATTACK:
-			if (comboBoxFightingAssignment.getSelectedItem() != null) {
+			if (chooseAssignmentCheckBox.isSelected() && comboBoxFightingAssignment.getSelectedItem() != null) {
 				return new Task(sourceList.getSelectedValue(),
 						Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()),
 						sourceList.getSelectedValue().getSkill(),
@@ -260,7 +271,7 @@ public class Gui {
 			}
 			break;
 		case DEFENCE:
-			if (comboBoxFightingAssignment.getSelectedItem() != null) {
+			if (chooseAssignmentCheckBox.isSelected() && comboBoxFightingAssignment.getSelectedItem() != null) {
 				return new Task(sourceList.getSelectedValue(),
 						Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()),
 						sourceList.getSelectedValue().getSkill(),
@@ -268,14 +279,14 @@ public class Gui {
 			}
 			break;
 		case MINING:
-			if (comboBoxMiningAssignment.getSelectedItem() != null) {
+			if (chooseAssignmentCheckBox.isSelected() && comboBoxMiningAssignment.getSelectedItem() != null) {
 				return new Task(sourceList.getSelectedValue(),
 						Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()),
 						sourceList.getSelectedValue().getSkill(),
 						(MiningAssignment) comboBoxMiningAssignment.getSelectedItem());
 			}
 		case STRENGTH:
-			if (comboBoxFightingAssignment.getSelectedItem() != null) {
+			if (chooseAssignmentCheckBox.isSelected() && comboBoxFightingAssignment.getSelectedItem() != null) {
 				return new Task(sourceList.getSelectedValue(),
 						Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()),
 						sourceList.getSelectedValue().getSkill(),
@@ -283,11 +294,18 @@ public class Gui {
 			}
 			break;
 		case WOODCUTTING:
-			if (comboBoxWoodcuttingAssignment.getSelectedItem() != null) {
+			if (chooseAssignmentCheckBox.isSelected() && comboBoxWoodcuttingAssignment.getSelectedItem() != null) {
 				return new Task(sourceList.getSelectedValue(),
 						Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()),
 						sourceList.getSelectedValue().getSkill(),
 						(WoodcuttingAssignment) comboBoxWoodcuttingAssignment.getSelectedItem());
+			}
+		case FISHING:
+			if (chooseAssignmentCheckBox.isSelected() && comboBoxFishingAssignment.getSelectedItem() != null) {
+				return new Task(sourceList.getSelectedValue(),
+						Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString()),
+						sourceList.getSelectedValue().getSkill(),
+						(FishingAssignment) comboBoxFishingAssignment.getSelectedItem());
 			}
 
 		}
@@ -300,6 +318,7 @@ public class Gui {
 		comboBoxWoodcuttingAssignment.setVisible(false);
 		comboBoxFightingAssignment.setVisible(false);
 		comboBoxAgilityAssignment.setVisible(false);
+		comboBoxFishingAssignment.setVisible(false);
 
 		if (assignment.equals(Assignment.MINING)) {
 			comboBoxMiningAssignment.setVisible(true);
@@ -309,6 +328,8 @@ public class Gui {
 			comboBoxFightingAssignment.setVisible(true);
 		} else if (assignment.equals(Assignment.AGILITY)) {
 			comboBoxAgilityAssignment.setVisible(true);
+		} else if (assignment.equals(Assignment.FISHING)) {
+			comboBoxFishingAssignment.setVisible(true);
 		}
 
 	}

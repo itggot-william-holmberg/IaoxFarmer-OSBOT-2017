@@ -9,7 +9,8 @@ public enum Assignment {
 	AGILITY(AssignmentType.SKILL, Skill.AGILITY),
 	STRENGTH(AssignmentType.COMBAT, Skill.STRENGTH),
 	ATTACK(AssignmentType.COMBAT, Skill.ATTACK),
-	DEFENCE(AssignmentType.COMBAT, Skill.DEFENCE);
+	DEFENCE(AssignmentType.COMBAT, Skill.DEFENCE), 
+	FISHING(AssignmentType.SKILL, Skill.FISHING);
 	
 	private AssignmentType type;
 	private Skill skill;

@@ -10,12 +10,15 @@ import org.osbot.rs07.utility.ConditionalSleep;
 import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.assignment.combat.FightingAreas;
 import com.iaox.farmer.data.Data;
+import com.iaox.farmer.node.methods.agility.AgilityMethods;
 
 public class WalkingMethods {
 	private Script script;
+	private AgilityMethods agilityMethods;
 
 	public WalkingMethods(Script script) {
 		this.script = script;
+		this.agilityMethods = new AgilityMethods(script);
 	}
 
 	// if player position right side of mountain and target position is in
@@ -34,7 +37,7 @@ public class WalkingMethods {
 					&& script.inventory.contains("Varrock teleport")) {
 				breakTablet("Varrock teleport");
 			} else if (area.getRandomPosition().getX() > 2850 && script.myPosition().getX() < 2850
-					&& (Data.lastHomeTeleport == 0 || (System.currentTimeMillis() - Data.lastHomeTeleport) > 1800000)) {
+					&& (Data.lastHomeTeleport == 0 || (System.currentTimeMillis() - Data.lastHomeTeleport) > 1800000) || agilityMethods.playerInGnomeAgilityArea()) {
 				homeTeleport();
 			}else{
 			script.walking.webWalk(area);

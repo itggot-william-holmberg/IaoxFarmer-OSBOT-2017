@@ -65,7 +65,6 @@ public class IntelligentMining {
 			}
 
 		}
-		script.log(tempBestAss);
 		return tempBestAss;
 
 	}

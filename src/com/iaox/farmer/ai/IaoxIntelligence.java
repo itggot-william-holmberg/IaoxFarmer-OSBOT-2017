@@ -1,6 +1,5 @@
 package com.iaox.farmer.ai;
 
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,11 +14,13 @@ import org.osbot.rs07.utility.ConditionalSleep;
 import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.ai.skills.IntelligentAgility;
 import com.iaox.farmer.ai.skills.IntelligentCombat;
+import com.iaox.farmer.ai.skills.IntelligentFishing;
 import com.iaox.farmer.ai.skills.IntelligentMining;
 import com.iaox.farmer.ai.skills.IntelligentWoodcutting;
 import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
+import com.iaox.farmer.assignment.fishing.FishingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
 import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
 import com.iaox.farmer.data.Data;
@@ -36,13 +37,17 @@ public class IaoxIntelligence implements Runnable {
 	private static MiningAssignment miningAssignment;
 	private static FightingAssignment fightingAssignment;
 	private static WoodcuttingAssignment woodcuttingAssignment;
-	private static Entity lastClickedObject;
+	private static FishingAssignment fishingAssignment;
 	private static AgilityAssignment agilityAssignment;
-	private IntelligentMining im;
-	private IntelligentCombat ic;
-	private IntelligentWoodcutting iw;
+
+	private static Entity lastClickedObject;
+
+	private IntelligentMining intelligentMining;
+	private IntelligentCombat intelligentCombat;
+	private IntelligentWoodcutting intelligentWoodcutting;
 	private IntelligentAgility intelligentAgility;
-	
+	private IntelligentFishing intelligentFishing;
+
 	private int ticks;
 	private int lastTickReset;
 
@@ -50,7 +55,7 @@ public class IaoxIntelligence implements Runnable {
 	private Players players;
 	private int amountOfWorldChanges;
 
-	public boolean scriptShouldRun = true;
+	public static boolean scriptShouldRun = true;
 
 	private List<RandomBreak> break_handler;
 	private int current_session_start = 0;
@@ -65,10 +70,11 @@ public class IaoxIntelligence implements Runnable {
 		frame = new AIFrame();
 		frame.setVisible(true);
 
-		im = new IntelligentMining(this.script);
-		ic = new IntelligentCombat(this.script);
-		iw = new IntelligentWoodcutting(this.script);
+		intelligentMining = new IntelligentMining(this.script);
+		intelligentCombat = new IntelligentCombat(this.script);
+		intelligentWoodcutting = new IntelligentWoodcutting(this.script);
 		intelligentAgility = new IntelligentAgility(this.script);
+		intelligentFishing = new IntelligentFishing(this.script);
 
 		break_handler = new ArrayList<RandomBreak>();
 		generateNewBreaks();
@@ -267,7 +273,7 @@ public class IaoxIntelligence implements Runnable {
 		 * current spot is "overcrowded" - change world or spot
 		 */
 		if (woodcuttingAssignment == null) {
-			woodcuttingAssignment = iw.getNewAssignment();
+			woodcuttingAssignment = intelligentWoodcutting.getNewAssignment();
 			frame.newMessage("Updated wc assignment");
 		} else if (script.myPlayer().isUnderAttack() && IaoxAIO.CURRENT_NODE != null
 				&& IaoxAIO.CURRENT_NODE.toString().equals("Woodcut")) {
@@ -284,7 +290,7 @@ public class IaoxIntelligence implements Runnable {
 		 * current spot is "overcrowded" - change world or spot
 		 */
 		if (miningAssignment == null) {
-			miningAssignment = im.getNewAssignment();
+			miningAssignment = intelligentMining.getNewAssignment();
 			frame.newMessage("Updated mining assignment");
 		} else if (players.playersInArea(miningAssignment.getObjectArea()) > 1
 				&& IaoxAIO.CURRENT_NODE.toString().equals("Mining")) {
@@ -304,7 +310,8 @@ public class IaoxIntelligence implements Runnable {
 	}
 
 	private void findBetterWoodcuttingAssignment() {
-		WoodcuttingAssignment similarAssignment = iw.getSimilarAssignment(woodcuttingAssignment.getWCArea(), woodcuttingAssignment.getRequiredLevel());
+		WoodcuttingAssignment similarAssignment = intelligentWoodcutting
+				.getSimilarAssignment(woodcuttingAssignment.getWCArea(), woodcuttingAssignment.getRequiredLevel());
 		if (similarAssignment != null) {
 			script.log("There is a better area for this assignment! lets switch.");
 			woodcuttingAssignment = similarAssignment;
@@ -375,11 +382,11 @@ public class IaoxIntelligence implements Runnable {
 	}
 
 	public void getNewMiningAssignment() {
-		setMiningAssignment(im.getNewAssignment());
+		setMiningAssignment(intelligentMining.getNewAssignment());
 	}
 
 	public void getNewFightingAssignment() {
-		setFightingAssignment(ic.getNewAssignment());
+		setFightingAssignment(intelligentCombat.getNewAssignment());
 	}
 
 	public static WoodcuttingAssignment getWCAssignment() {
@@ -387,21 +394,30 @@ public class IaoxIntelligence implements Runnable {
 	}
 
 	public void getNewWCAssignment() {
-		setWCAssignment(iw.getNewAssignment());
+		setWCAssignment(intelligentWoodcutting.getNewAssignment());
 	}
 
 	private void setWCAssignment(WoodcuttingAssignment woodcuttingAssignment) {
 		this.woodcuttingAssignment = woodcuttingAssignment;
 
 	}
-	
+
 	public static AgilityAssignment getAgilityAssignment() {
 		return agilityAssignment;
 	}
-	
+
 	public void getNewAgilityAssignment() {
 		this.agilityAssignment = intelligentAgility.getNewAssignment();
-		
+
+	}
+
+	public static FishingAssignment getFishingAssignment() {
+		return fishingAssignment;
+	}
+
+	public void getNewFishingAssignment() {
+		fishingAssignment = intelligentFishing.getNewAssignment();
+
 	}
 
 	private void generateNewBreaks() {
@@ -416,7 +432,7 @@ public class IaoxIntelligence implements Runnable {
 		/*
 		 * "Sleepbreak"
 		 */
-		break_handler.add(new RandomBreak(IaoxAIO.random(30, 65), IaoxAIO.random(360, 540)));
+		break_handler.add(new RandomBreak(IaoxAIO.random(1, 2), IaoxAIO.random(360, 540)));
 	}
 
 	private void sleeps(int i) {
@@ -433,16 +449,20 @@ public class IaoxIntelligence implements Runnable {
 	private boolean breakSleep(int minutes) {
 		scriptShouldRun = false;
 		frame.newMessage("Lets sleep for: " + minutes + " minutes.");
-		if (script.client.isLoggedIn()) {
-			script.getLogoutTab().logOut();
-			return false;
-		} else {
-			sleeps(minutes * 60000);
-
-			current_session_start = ticks;
-			scriptShouldRun = true;
-			return true;
+		for (int i = 0; i < 25; i++) {
+			if (script.client.isLoggedIn()) {
+				script.getLogoutTab().logOut();
+				sleeps(2000);
+			} else {
+				break;
+			}
 		}
+
+		sleeps(minutes * 60000);
+
+		current_session_start = ticks;
+		scriptShouldRun = true;
+		return true;
 	}
 
 	private void scriptSleep(int random) {
@@ -473,7 +493,7 @@ public class IaoxIntelligence implements Runnable {
 		t.interrupt();
 	}
 
-	public static boolean lastClickedObject(RS2Object object) {
+	public static boolean lastClickedObject(Entity object) {
 		if (lastClickedObject == null) {
 			lastClickedObject = object;
 			return false;
@@ -495,7 +515,7 @@ public class IaoxIntelligence implements Runnable {
 		case ATTACK:
 		case DEFENCE:
 			if (level < 10) {
-				return level + 7 + IaoxAIO.random(0, 7);
+				return level + 6 + IaoxAIO.random(0, 6);
 			}
 			if (level < 20) {
 				return level + 5 + IaoxAIO.random(0, 5);
@@ -510,7 +530,7 @@ public class IaoxIntelligence implements Runnable {
 				return level + 1 + IaoxAIO.random(0, 2);
 			}
 			return level + 1;
-			
+
 		case AGILITY:
 			if (level < 30) {
 				return 30;
@@ -532,16 +552,16 @@ public class IaoxIntelligence implements Runnable {
 		case STRENGTH:
 		case WOODCUTTING:
 			if (level < 10) {
-				return level + 10 + IaoxAIO.random(0, 10);
-			}
-			if (level < 20) {
 				return level + 7 + IaoxAIO.random(0, 7);
 			}
+			if (level < 20) {
+				return level + 5 + IaoxAIO.random(0, 5);
+			}
 			if (level < 30) {
-				return level + 6 + IaoxAIO.random(0, 3);
+				return level + 4 + IaoxAIO.random(0, 4);
 			}
 			if (level < 40) {
-				return level + 5 + IaoxAIO.random(0, 3);
+				return level + 4 + IaoxAIO.random(0, 3);
 			}
 			if (level < 50) {
 				return level + 4 + IaoxAIO.random(0, 2);
@@ -568,14 +588,27 @@ public class IaoxIntelligence implements Runnable {
 				return level + 1 + IaoxAIO.random(0, 2);
 			}
 			return level + 1 + IaoxAIO.random(0, 1);
+		case FISHING:
+			if (level < 10) {
+				return level + 5 + IaoxAIO.random(0, 5);
+			}
+			if (level < 20) {
+				return level + 3 + IaoxAIO.random(0, 3);
+			}
+			if (level < 30) {
+				return level + 2 + IaoxAIO.random(0, 3);
+			}
+			if (level < 40) {
+				return level + 1 + IaoxAIO.random(0, 2);
+			}
+			return level + 1 + IaoxAIO.random(0, 1);
 		}
-		
-		
+
 		return level + 1;
 	}
 
 	public Assignment getRandomAssignment() {
-		int task = IaoxAIO.random(1, 5);
+		int task = IaoxAIO.random(1, 6);
 		Assignment ass = null;
 		switch (task) {
 		case 1:
@@ -586,12 +619,12 @@ public class IaoxIntelligence implements Runnable {
 			return Assignment.MINING;
 		case 5:
 			return Assignment.WOODCUTTING;
-		/*case 6:
-			if(script.worlds.isMembersWorld()){
-				return Assignment.AGILITY;
-			}
-			return getRandomAssignment();
-			*/
+		case 6:
+			return Assignment.FISHING;
+		/*
+		 * case 6: if(script.worlds.isMembersWorld()){ return
+		 * Assignment.AGILITY; } return getRandomAssignment();
+		 */
 		default:
 			return Assignment.WOODCUTTING;
 		}
@@ -602,7 +635,9 @@ public class IaoxIntelligence implements Runnable {
 		if (script.getSkills().getStatic(Skill.ATTACK) >= script.getSkills().getStatic(Skill.STRENGTH)) {
 			return Assignment.STRENGTH;
 		}
-		if (script.getSkills().getStatic(Skill.DEFENCE) >= script.getSkills().getStatic(Skill.ATTACK)) {
+		if (script.getSkills().getStatic(Skill.DEFENCE) >= script.getSkills().getStatic(Skill.ATTACK)
+				|| script.getSkills().getStatic(Skill.STRENGTH) >= 30
+						&& script.getSkills().getStatic(Skill.ATTACK) < 30) {
 			return Assignment.ATTACK;
 		}
 		switch (task) {
@@ -611,9 +646,9 @@ public class IaoxIntelligence implements Runnable {
 		case 2:
 			return Assignment.STRENGTH;
 		case 3:
-			if(Data.trainDefence){
-			return Assignment.DEFENCE;
-			}else{
+			if (Data.trainDefence) {
+				return Assignment.DEFENCE;
+			} else {
 				return getRandomCombatAssignment();
 			}
 		default:

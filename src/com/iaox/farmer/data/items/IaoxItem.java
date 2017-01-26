@@ -55,8 +55,15 @@ public enum IaoxItem {
 	GRIMY_CADANTINE("Grimy cadantine", 215),
 	GRIMY_RANARR_WEED("Grimy ranarr weed", 207),
 	
+	//fishing gear
+	SMALL_FISHING_NET("Small fishing net", 303),
+	FLY_FISHING_ROD("Fly fishing rod", 309),
+	FEATHER("Feather", 314),
+	HARPOON("Harpoon", 311),
+	
 	//other
-	COWHIDE("Cowhide", 1739);
+	COWHIDE("Cowhide", 1739),
+	BONES("Bones", 526);
 	
 	
 	private String itemName;
@@ -74,6 +81,15 @@ public enum IaoxItem {
 	public static IaoxItem getItem(String itemName) {
 		for(IaoxItem item : IaoxItem.values()){
 			if(item.getName().equals(itemName)){
+				return item;
+			}
+		}
+		return null;
+	}
+	
+	public static IaoxItem getItem(int itemID) {
+		for(IaoxItem item : IaoxItem.values()){
+			if(item.getID() == itemID){
 				return item;
 			}
 		}

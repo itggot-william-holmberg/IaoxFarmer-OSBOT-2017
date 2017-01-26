@@ -138,8 +138,13 @@ public class CombatMethods {
 			return GearSetups.STARTER_MELEE_SETUP;
 		}
 
+		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 30 &&
+				script.worlds.isMembersWorld()) {
+			return GearSetups.ADDY_SCIM_P2P;
+		}
+		
 		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 30) {
-			return GearSetups.ADDY_SCIM;
+			return GearSetups.ADDY_SCIM_F2P;
 		}
 
 		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30
@@ -160,20 +165,31 @@ public class CombatMethods {
 
 	public void withdrawNeededItems() {
 		IaoxItem item = Data.WITHDRAW_LIST.get(0);
-		if (script.inventory.contains(item.getName()) || script.equipment.contains(item.getName())) {
+		//noted
+		if (script.inventory.contains(item.getID() + 1)){
+			bankingMethods.depositAll(item.getName());
+		}
+		else if (script.inventory.contains(item.getName()) || script.equipment.contains(item.getName())) {
 			Data.WITHDRAW_LIST.remove(item);
 		} else {
 			switch (item) {
 			case FALADOR_TELEPORT:
 				bankingMethods.withdraw(4 + IaoxAIO.random(2), item.getName());
 			case COOKED_TROUT:
-				bankingMethods.withdraw(12, item.getName());
+				bankingMethods.withdraw(getFoodAmount(), item.getName());
 				break;
 			default:
 				bankingMethods.withdraw(item.getName());
 				break;
 			}
 		}
+	}
+
+	public int getFoodAmount() {
+		if(script.getSkills().getStatic(Skill.DEFENCE) < 30){
+			return 16;
+		}
+		return 3;
 	}
 
 	public boolean playerInFightArea() {
@@ -273,6 +289,21 @@ public class CombatMethods {
 
 			}.sleep();
 		}
+		
+		GroundItem bones = getClosestLoot(IaoxItem.BONES);
+
+		if (bones != null) {
+			int amountBeforeLoot = (int) script.getInventory().getAmount(bones.getId());
+			bones.interact("Take");
+			new ConditionalSleep(300, 5000) {
+
+				@Override
+				public boolean condition() throws InterruptedException {
+					return script.inventory.getAmount(bones.getId()) > amountBeforeLoot;
+				}
+
+			}.sleep();
+		}
 	}
 
 	public boolean lootIsAvailable() {
@@ -287,6 +318,11 @@ public class CombatMethods {
 
 		}
 	}
+	
+	public GroundItem getClosestLoot(IaoxItem item) {
+		return script.groundItems.closest(i -> item.getID() == i.getId() && 
+				getAssignment().getFightArea().contains(i));
+	}
 
 	private GroundItem getClosestLoot() {
 		return script.groundItems.closest(i -> IaoxItem.getItemIDS(getAssignment().getLoot()).contains(i.getId())
@@ -294,7 +330,6 @@ public class CombatMethods {
 	}
 
 	public boolean playerHasToEat() {
-		script.log(script.myPlayer().getHealthPercent());
 		return script.myPlayer().getHealthPercent() < 45;
 	}
 
@@ -307,6 +342,18 @@ public class CombatMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				return hp != script.myPlayer().getHealthPercent();
+			}
+
+		}.sleep();
+	}
+
+	public void buryBones() {
+		script.inventory.interact("Bury",  "Bones");
+		new ConditionalSleep(300, 5000) {
+
+			@Override
+			public boolean condition() throws InterruptedException {
+				return !script.inventory.contains("Bones");
 			}
 
 		}.sleep();

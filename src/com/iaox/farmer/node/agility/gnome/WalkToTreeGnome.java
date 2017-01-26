@@ -23,11 +23,10 @@ public class WalkToTreeGnome extends Node{
 			walkingMethods.webWalk(new Position(2461, 3380, 0));
 		}
 		else if(GnomeData.gnomeGateArea.contains(script.myPlayer()) && script.myPlayer().getPosition().getY() < 3384) {
-			try {
+			if(continueMessageIsVisible()){
+				checkContinue();
+			}else{
 				openGate();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 		else if(script.myPlayer().getPosition().getY() > 3384 && GnomeData.outsideGnomeAgil.contains(script.myPlayer()) && !GnomeData.gnomeAgilityArea.contains(script.myPlayer())) {
@@ -46,13 +45,13 @@ public class WalkToTreeGnome extends Node{
 		}
 	}
 
-	private void openGate() throws InterruptedException {
+	private void openGate()  {
 		RS2Object gate = script.objects.closest("Gate");
 		
 		if(gate != null) {
 			if(gate.isVisible()) {
 				gate.interact("Open");
-				script.sleep(500);
+				sleeps(2500);
 			}else {
 				script.camera.toEntity(gate);
 			}

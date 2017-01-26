@@ -1,5 +1,7 @@
 package com.iaox.farmer.node.methods;
 
+import java.util.List;
+
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
@@ -67,6 +69,14 @@ public class BankingMethods {
 		}
 	}
 	
+	public void withdraw(List<IaoxItem> items) {
+		for(IaoxItem item : items){
+			if(!script.inventory.contains(item.getID())){
+				withdraw(1, item.getID());
+			}
+		}
+	}
+
 	public void withdraw(int amount, String itemName) {
 		if (!script.bank.isOpen()) {
 			try {
@@ -98,6 +108,38 @@ public class BankingMethods {
 			}
 		}
 	}
+	
+	public void withdraw(int amount, int itemID) {
+		if (!script.bank.isOpen()) {
+			try {
+				script.bank.open();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else if (script.inventory.isFull()) {
+			script.bank.depositAll();
+		} else if (script.bank.contains(itemID)) {
+			script.bank.withdraw(itemID, amount);
+			new ConditionalSleep(4000) {
+				@Override
+				public boolean condition() throws InterruptedException {
+					IaoxAIO.sleep(300);
+					return script.inventory.contains(itemID);
+				}
+			}.sleep();
+		} else {
+			script.log("We do not have the required item: " + itemID);
+			IaoxItem item = IaoxItem.getItem(itemID);
+			if (item != null) {
+				GrandExchangeData.ITEMS_TO_BUY_LIST.add(IaoxItem.getItem(itemID));
+			} else {
+				script.log("The required item: " + itemID + " does not exist in the Item database");
+				script.stop();
+				script.stop();
+			}
+		}
+	}
 
 	public void depositBoxDepositAllExcept(String item) {
 		if (script.depositBox.isOpen()) {
@@ -111,6 +153,24 @@ public class BankingMethods {
 			}.sleep();
 		} else {
 			script.depositBox.open();
+		}
+
+	}
+
+	public void depositBoxDepositAllExcept(List<IaoxItem> items) {
+		for (IaoxItem item : items) {
+			if (script.depositBox.isOpen()) {
+				script.depositBox.depositAllExcept(item.getID());
+				new ConditionalSleep(4000) {
+					@Override
+					public boolean condition() throws InterruptedException {
+						IaoxAIO.sleep(300);
+						return script.inventory.isEmpty();
+					}
+				}.sleep();
+			} else {
+				script.depositBox.open();
+			}
 		}
 
 	}

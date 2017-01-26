@@ -17,7 +17,7 @@ import com.iaox.farmer.data.items.IaoxItem;
 public enum FightingAssignment {
 
 	SEAGULL(new String[]{"Seagull"}, FightingAreas.SEAGULL_AREA),
-	COWS_LUMBRIDGE(new String[]{"Cow"}, FightingAreas.COW_LUMBRIDGE_AREA, Banks.LUMBRIDGE_UPPER, Loot.COW_LOOT),
+	COWS_LUMBRIDGE(new String[]{"Cow"}, FightingAreas.COW_LUMBRIDGE_AREA, Banks.LUMBRIDGE_UPPER, new IaoxItem[]{IaoxItem.COOKED_TROUT}, Loot.COW_LOOT),
 	CHAOS_DRUIDS_TAVERLEY(new String[]{"Chaos druid"}, FightingAreas.CHAOS_DRUIDS_TAVERLEY_AREA, Banks.FALADOR_WEST, new IaoxItem[]{IaoxItem.COOKED_TROUT, IaoxItem.FALADOR_TELEPORT}, Loot.CHAOS_DRUID_LOOT);
 	
 	private String[] name;

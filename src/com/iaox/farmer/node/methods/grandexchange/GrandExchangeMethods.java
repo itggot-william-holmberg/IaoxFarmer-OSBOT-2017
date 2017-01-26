@@ -100,11 +100,13 @@ public class GrandExchangeMethods {
 	}
 
 	private int getItemAmount(IaoxItem item) {
-		switch(item){
+		switch (item) {
 		case FALADOR_TELEPORT:
 			return 35;
 		case COOKED_TROUT:
 			return 500;
+		case FEATHER:
+			return 2500 + IaoxAIO.random(1000);
 		default:
 			return 1;
 		}
@@ -130,7 +132,10 @@ public class GrandExchangeMethods {
 		case RED_HAT:
 		case MONKS_BOTTOM_ROBE:
 		case MONKS_TOP_ROBE:
+		case FLY_FISHING_ROD:
 			return 4000 + IaoxAIO.random(500);
+		case FEATHER:
+			return 30 + IaoxAIO.random(10);
 		default:
 			int overallPrice = 1000;
 			try {
@@ -145,10 +150,12 @@ public class GrandExchangeMethods {
 
 	public void sellItems() {
 		for (IaoxItem item : GrandExchangeData.DEFAULT_SELLABLE_ITEMS) {
-			if (collectButtonIsVisible()) {
+			if (item.getName() == null || !script.inventory.contains(item.getName())) {
+				script.log("item is null");
+			} else if (collectButtonIsVisible()) {
 				int amountOfCash = (int) script.inventory.getAmount(995);
 				script.grandExchange.collect();
-				new ConditionalSleep(5000,10000) {
+				new ConditionalSleep(5000, 10000) {
 
 					@Override
 					public boolean condition() {

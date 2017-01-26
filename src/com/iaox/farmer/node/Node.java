@@ -10,6 +10,7 @@ import com.iaox.farmer.node.methods.MuleMethods;
 import com.iaox.farmer.node.methods.WalkingMethods;
 import com.iaox.farmer.node.methods.agility.AgilityMethods;
 import com.iaox.farmer.node.methods.combat.CombatMethods;
+import com.iaox.farmer.node.methods.fishing.FishingMethods;
 import com.iaox.farmer.node.methods.grandexchange.GrandExchangeMethods;
 import com.iaox.farmer.node.methods.mining.MiningMethods;
 import com.iaox.farmer.node.methods.woodcutting.WoodcuttingMethods;
@@ -25,6 +26,7 @@ public abstract class Node {
 	protected CombatMethods combatMethods;
 	protected WoodcuttingMethods wcMethods;
 	protected AgilityMethods agilityMethods;
+	protected FishingMethods fishingMethods;
 	
 	public Node init(Script script){
 		this.script = script;
@@ -36,6 +38,7 @@ public abstract class Node {
 		this.combatMethods = new CombatMethods(script);
 		this.wcMethods = new WoodcuttingMethods(script);
 		this.agilityMethods = new AgilityMethods(script);
+		this.fishingMethods = new FishingMethods(script);
 		return this;
 	}
 	

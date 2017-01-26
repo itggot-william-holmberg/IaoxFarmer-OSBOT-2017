@@ -15,7 +15,6 @@ import org.osbot.rs07.script.ScriptManifest;
 import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.ai.IaoxIntelligence;
-import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.data.Data;
 import com.iaox.farmer.data.GrandExchangeData;
 import com.iaox.farmer.data.items.IaoxItem;
@@ -28,6 +27,10 @@ import com.iaox.farmer.node.combat.BankFight;
 import com.iaox.farmer.node.combat.Fight;
 import com.iaox.farmer.node.combat.WalkToBankFromFight;
 import com.iaox.farmer.node.combat.WalkToFight;
+import com.iaox.farmer.node.fishing.FishingAction;
+import com.iaox.farmer.node.fishing.FishingBank;
+import com.iaox.farmer.node.fishing.WalkToFishingBank;
+import com.iaox.farmer.node.fishing.WalkToFishingLocation;
 import com.iaox.farmer.node.grandexchange.BuyItem;
 import com.iaox.farmer.node.grandexchange.GrandExchangeBank;
 import com.iaox.farmer.node.grandexchange.WalkToGrandExchange;
@@ -97,14 +100,8 @@ public class IaoxAIO extends Script {
 
 		username = getBot().getUsername();
 		switch (username) {
-		case "rebeccaabbe@clayvolatile.tk":
-			password = "bella";
-			break;
-		case "edgedrag@mail.com":
-			password = "pass123";
-			break;
 		default:
-			password = "boowoo123";
+			password = "pass123";
 			break;
 		}
 
@@ -112,7 +109,7 @@ public class IaoxAIO extends Script {
 
 		gui = new Gui();
 		guiWait = true;
-		
+
 		login();
 
 		ii = new IaoxIntelligence();
@@ -138,10 +135,24 @@ public class IaoxAIO extends Script {
 		return 600;
 	}
 
+	private void handeBreakLogout() {
+		if(client.isLoggedIn()){
+			logout("We should break");
+		}
+	}
+
 	private void addGrandExchangeData() {
 		GrandExchangeData.DEFAULT_SELLABLE_ITEMS = new ArrayList<IaoxItem>();
 		GrandExchangeData.CURRENT_SELLABLE_ITEMS = new ArrayList<IaoxItem>();
 		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.IRON_ORE);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_DWARF_WEED);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_CADANTINE);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_AVANTOE);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_HARRALANDER);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_IRIT);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_KWUARM);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_LANTADYME);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_RANARR_WEED);
 		addGrandExchangeNodes();
 	}
 
@@ -155,6 +166,7 @@ public class IaoxAIO extends Script {
 
 	private void executeGrandExchangeNode() {
 		log("handle ge task");
+		if(client.isLoggedIn()){
 		Boolean active = false;
 		for (Node node : GRAND_EXCHANGE_NODE_HANDLER) {
 			if (node.active()) {
@@ -169,6 +181,9 @@ public class IaoxAIO extends Script {
 		// be found.
 		if (!active) {
 			CURRENT_NODE = null;
+		}
+		}else{
+			login();
 		}
 
 	}
@@ -189,9 +204,9 @@ public class IaoxAIO extends Script {
 		if (!TASK_HANDLER.isEmpty()) {
 			CURRENT_TASK = TASK_HANDLER.getFirst();
 			updateNodes();
-		} else if(breakHandlerTask != null && !breakHandlerTask.isCompleted(this) && Data.ONE_TASK_PER_PLAYTIME){
-			TASK_HANDLER.add(breakHandlerTask);	
-		}else {
+		} else if (breakHandlerTask != null && !breakHandlerTask.isCompleted(this) && Data.ONE_TASK_PER_PLAYTIME) {
+			TASK_HANDLER.add(breakHandlerTask);
+		} else {
 			TASK_HANDLER.add(ii.generateNewTask());
 		}
 	}
@@ -227,7 +242,7 @@ public class IaoxAIO extends Script {
 		NODE_HANDLER.add(new BankFight().init(this));
 		NODE_HANDLER.add(new Fight().init(this));
 		NODE_HANDLER.add(new WalkToBankFromFight().init(this));
-		NODE_HANDLER.add(new WalkToFight().init(this));		
+		NODE_HANDLER.add(new WalkToFight().init(this));
 	}
 
 	private void handleGui() {
@@ -245,12 +260,12 @@ public class IaoxAIO extends Script {
 	}
 
 	private void skillSwitch() {
-		
+
 		switch (CURRENT_TASK.getAssignment()) {
 		case MINING:
 			startXP = getSkills().getExperience(Skill.MINING);
 			ii.getNewMiningAssignment();
-			
+
 			NODE_HANDLER.add(new MiningBank().init(this));
 			NODE_HANDLER.add(new WalkToMiningBank().init(this));
 			NODE_HANDLER.add(new WalkToMiningLocation().init(this));
@@ -259,7 +274,7 @@ public class IaoxAIO extends Script {
 		case WOODCUTTING:
 			startXP = getSkills().getExperience(Skill.WOODCUTTING);
 			ii.getNewWCAssignment();
-			
+
 			NODE_HANDLER.add(new WCAction().init(this));
 			NODE_HANDLER.add(new WalkToWCBank().init(this));
 			NODE_HANDLER.add(new WalkToWCLocation().init(this));
@@ -268,9 +283,17 @@ public class IaoxAIO extends Script {
 		case AGILITY:
 			startXP = getSkills().getExperience(Skill.AGILITY);
 			ii.getNewAgilityAssignment();
-			
+
 			NODE_HANDLER.add(new GnomeCourse().init(this));
 			NODE_HANDLER.add(new WalkToTreeGnome().init(this));
+		case FISHING:
+			startXP = getSkills().getExperience(Skill.FISHING);
+			ii.getNewFishingAssignment();
+
+			NODE_HANDLER.add(new FishingAction().init(this));
+			NODE_HANDLER.add(new FishingBank().init(this));
+			NODE_HANDLER.add(new WalkToFishingBank().init(this));
+			NODE_HANDLER.add(new WalkToFishingLocation().init(this));
 		}
 	}
 
@@ -342,11 +365,11 @@ public class IaoxAIO extends Script {
 			startNewThread();
 		} else if (!muleThread.isRunning() && !muleThread.getConnection()) {
 			logout("host is not available, lets logout and sleep until host is available");
-			sleeps(IaoxAIO.random(50000,60000));
+			sleeps(IaoxAIO.random(50000, 60000));
 		} else if (muleThread.isRunning() && muleThread.getMule() == null) {
 			logout("Mule is not available, lets logout and sleep until mule is available");
 			logoutTab.logOut();
-			sleeps(IaoxAIO.random(50000,60000));
+			sleeps(IaoxAIO.random(50000, 60000));
 		}
 	}
 
@@ -503,8 +526,8 @@ public class IaoxAIO extends Script {
 			} else {
 				g.drawString("Current sesson_playtime(ticks) " + ii.getCurrentPlayTime(), 50, 70);
 				g.drawString("We will break in "
-						+ (ii.getBreakHandler().get(0).getPlayTime() - (ii.getCurrentPlayTime() / 60) + " minutes"),
-						50, 90);
+						+ (ii.getBreakHandler().get(0).getPlayTime() - (ii.getCurrentPlayTime() / 60) + " minutes"), 50,
+						90);
 			}
 		}
 
