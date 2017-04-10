@@ -11,4 +11,5 @@ public class GrandExchangeData {
 	
 	public static List<IaoxItem> ITEMS_TO_BUY_LIST;
 	public static boolean SHOULD_COLLECT = false;
+	public static int CURRENT_AMOUNT_OF_ITEM = 9999999;
 }

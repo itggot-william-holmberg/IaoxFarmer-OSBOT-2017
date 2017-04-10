@@ -71,9 +71,11 @@ public class GrandExchangeMethods {
 					}
 
 				}.sleep();
-			} else if (script.inventory.contains(item.getName())) {
+			} else if (script.inventory.getAmount(item.getName()) > GrandExchangeData.CURRENT_AMOUNT_OF_ITEM) {
 				GrandExchangeData.ITEMS_TO_BUY_LIST.remove(item);
+				GrandExchangeData.CURRENT_AMOUNT_OF_ITEM = 999999999;
 			} else if (script.inventory.getAmount(995) >= getItemPrice(item)) {
+				GrandExchangeData.CURRENT_AMOUNT_OF_ITEM = (int) script.inventory.getAmount(item.getName());
 				script.grandExchange.buyItem(item.getID(), item.getName(), getItemPrice(item), getItemAmount(item));
 				new ConditionalSleep(2500, 3000) {
 
@@ -126,6 +128,15 @@ public class GrandExchangeMethods {
 	}
 
 	public int getItemPrice(IaoxItem item) {
+		if(item.getName().contains("robe") || item.getName().contains("cape") || 
+				item.getName().contains("hat") || item.getName().contains("boots") ){
+			try {
+				return gePrice.getOverallPrice(item.getID()) + 4000 + IaoxAIO.random(3000);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		switch (item) {
 		case MITHRIL_PICKAXE:
 		case DESERT_BOOTS:
@@ -144,7 +155,7 @@ public class GrandExchangeMethods {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return (int) (overallPrice * 1.3);
+			return (int) (overallPrice * 2);
 		}
 	}
 

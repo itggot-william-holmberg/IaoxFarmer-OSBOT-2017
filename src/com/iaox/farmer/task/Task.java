@@ -4,6 +4,7 @@ import org.osbot.rs07.api.ui.Skill;
 import org.osbot.rs07.script.Script;
 
 import com.iaox.farmer.assignment.Assignment;
+import com.iaox.farmer.assignment.AssignmentType;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
 import com.iaox.farmer.assignment.fishing.FishingAssignment;
@@ -13,7 +14,7 @@ import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
 public class Task {
 
 	private Assignment assignment;
-	private int levelGoal;
+	private int goalExperience;
 	private Skill skill;
 	private MiningAssignment specifiedMiningAssignment;
 	private WoodcuttingAssignment specifiedWoodcuttingAssignment;
@@ -21,43 +22,48 @@ public class Task {
 	private AgilityAssignment specifiedAgilityAssignment;
 	private FishingAssignment specifiedFishingAssignment;
 
-	public Task(Assignment assignment, int levelGoal, Skill skill) {
+	
+	public Task(Assignment assignment) {
 		this.assignment = assignment;
-		this.levelGoal = levelGoal;
+	}
+	
+	public Task(Assignment assignment, int goalExperience, Skill skill) {
+		this.assignment = assignment;
+		this.goalExperience = goalExperience;
 		this.skill = skill;
 	}
 	
-	public Task(Assignment assignment, int levelGoal, Skill skill, MiningAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, MiningAssignment specifiedAssignment) {
 		this.assignment = assignment;
-		this.levelGoal = levelGoal;
+		this.goalExperience = goalExperience;
 		this.skill = skill;
 		setSpecifiedMiningAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int levelGoal, Skill skill, WoodcuttingAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, WoodcuttingAssignment specifiedAssignment) {
 		this.assignment = assignment;
-		this.levelGoal = levelGoal;
+		this.goalExperience = goalExperience;
 		this.skill = skill;
 		setSpecifiedWoodcuttingAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int levelGoal, Skill skill, FightingAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, FightingAssignment specifiedAssignment) {
 		this.assignment = assignment;
-		this.levelGoal = levelGoal;
+		this.goalExperience = goalExperience;
 		this.skill = skill;
 		setSpecifiedFightingAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int levelGoal, Skill skill, AgilityAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, AgilityAssignment specifiedAssignment) {
 		this.assignment = assignment;
-		this.levelGoal = levelGoal;
+		this.goalExperience = goalExperience;
 		this.skill = skill;
 		setSpecifiedAgilityAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int levelGoal, Skill skill, FishingAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, FishingAssignment specifiedAssignment) {
 		this.assignment = assignment;
-		this.levelGoal = levelGoal;
+		this.goalExperience = goalExperience;
 		this.skill = skill;
 		setSpecifiedFishingAssignment(specifiedAssignment);
 	}
@@ -69,15 +75,21 @@ public class Task {
 
 
 	public boolean isCompleted(Script script) {
-		return script.getSkills().getStatic(skill) >= levelGoal;
+		if(assignment.getType().equals(AssignmentType.QUEST)){
+			switch(assignment){
+			case TUTORIAL_ISLAND:
+				return script.getConfigs().get(281) == 1000;
+			}
+		}
+		return script.getSkills().getExperience(skill) >= goalExperience;
 	}
 
 	public Assignment getAssignment() {
 		return assignment;
 	}
 
-	public int getLevelGoal() {
-		return levelGoal;
+	public int getGoalExperience() {
+		return goalExperience;
 	}
 	
 	private Skill getSkill() {
@@ -116,7 +128,7 @@ public class Task {
 	}
 	
 	public String toString(){
-		return  getLevelGoal() + ":" + getSkill();
+		return  getGoalExperience() + ":" + getSkill();
 	}
 
 }

@@ -13,6 +13,7 @@ import org.osbot.rs07.utility.ConditionalSleep;
 
 import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.ai.IaoxIntelligence;
+import com.iaox.farmer.assignment.AssignmentType;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
 import com.iaox.farmer.assignment.combat.gear.GearSetups;
 import com.iaox.farmer.data.Data;
@@ -46,8 +47,8 @@ public class CombatMethods {
 	public NPC getClosestFreeNPC(String[] name) {
 		return script.getNpcs()
 				.closest(npc -> !npc.isUnderAttack() && npc.getHealthPercent() > 0 && npc.getInteracting() == null
-						&& Arrays.asList(name).contains(npc.getName()) && npc.exists() && getAssignment().getFightArea().contains(npc)
-						&& npc.hasAction("Attack"));
+						&& Arrays.asList(name).contains(npc.getName()) && npc.exists()
+						&& getAssignment().getFightArea().contains(npc) && npc.hasAction("Attack"));
 	}
 
 	public boolean playerInBankArea() {
@@ -74,7 +75,7 @@ public class CombatMethods {
 		boolean bool = true;
 		if (getAssignment().getInventory() != null) {
 			for (IaoxItem item : getAssignment().getInventory()) {
-				if (script.inventory.contains(item.getName())) {
+				if (script.inventory.contains(item.getID())) {
 					// inv contains the item. good
 				} else if (!Data.WITHDRAW_LIST.contains(item)) {
 					Data.WITHDRAW_LIST.add(item);
@@ -134,8 +135,19 @@ public class CombatMethods {
 	}
 
 	public GearSetups getGear() {
-		if (script.getSkills().getStatic(Skill.ATTACK) < 30) {
-			return GearSetups.STARTER_MELEE_SETUP;
+		/*if (IaoxAIO.CURRENT_TASK.getAssignment().getType() == AssignmentType.MELEE) {
+			return getMeleeGear();
+		}
+
+		if (IaoxAIO.CURRENT_TASK.getAssignment().getType() == AssignmentType.RANGED) {
+			return getRangeGear();
+		}*/
+		return getMeleeGear();
+	}
+
+	/*private GearSetups getRangeGear() {
+		if (script.getSkills().getStatic(Skill.RANGED) < 20) {
+			return GearSetups.STARTER_RANGED_SETUP;
 		}
 
 		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 30 &&
@@ -161,15 +173,47 @@ public class CombatMethods {
 		}
 
 		return GearSetups.STARTER_MELEE_SETUP;
+	}*/
+
+	private GearSetups getMeleeGear() {
+		if (script.getSkills().getStatic(Skill.ATTACK) < 30) {
+			return GearSetups.STARTER_MELEE_SETUP;
+		}
+
+		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 30
+				&& script.worlds.isMembersWorld()) {
+			return GearSetups.ADDY_SCIM_P2P;
+		}
+
+		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 30) {
+			return GearSetups.ADDY_SCIM_F2P;
+		}
+
+		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30
+				&& script.worlds.isMembersWorld()) {
+			return GearSetups.RUNE_SCIM_P2P;
+		}
+
+		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30) {
+			return GearSetups.RUNE_SCIM_F2P;
+		}
+
+		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 45) {
+			return GearSetups.FULL_ADAMANT_ADDY_SCIM;
+		}
+		if (script.getSkills().getStatic(Skill.ATTACK) < 99 && script.getSkills().getStatic(Skill.DEFENCE) < 45) {
+			return GearSetups.FULL_ADAMANT_RUNE_SCIM;
+		}
+
+		return GearSetups.STARTER_MELEE_SETUP;
 	}
 
 	public void withdrawNeededItems() {
 		IaoxItem item = Data.WITHDRAW_LIST.get(0);
-		//noted
-		if (script.inventory.contains(item.getID() + 1)){
+		// noted
+		if (script.inventory.contains(item.getID() + 1)) {
 			bankingMethods.depositAll(item.getName());
-		}
-		else if (script.inventory.contains(item.getName()) || script.equipment.contains(item.getName())) {
+		} else if (script.inventory.contains(item.getName()) || script.equipment.contains(item.getName())) {
 			Data.WITHDRAW_LIST.remove(item);
 		} else {
 			switch (item) {
@@ -186,8 +230,11 @@ public class CombatMethods {
 	}
 
 	public int getFoodAmount() {
-		if(script.getSkills().getStatic(Skill.DEFENCE) < 30){
+		if (script.getSkills().getStatic(Skill.DEFENCE) < 30 && IaoxIntelligence.getFightingAssignment() == FightingAssignment.SEAGULL){
 			return 16;
+		}
+		if (script.getSkills().getStatic(Skill.DEFENCE) < 30) {
+			return 4;
 		}
 		return 3;
 	}
@@ -280,6 +327,12 @@ public class CombatMethods {
 		if (item != null) {
 			int amountBeforeLoot = (int) script.getInventory().getAmount(item.getId());
 			item.interact("Take");
+			try {
+				IaoxAIO.sleep(1500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			new ConditionalSleep(300, 5000) {
 
 				@Override
@@ -289,10 +342,10 @@ public class CombatMethods {
 
 			}.sleep();
 		}
-		
+
 		GroundItem bones = getClosestLoot(IaoxItem.BONES);
 
-		if (bones != null) {
+		if (bones != null && Data.trainDefence) {
 			int amountBeforeLoot = (int) script.getInventory().getAmount(bones.getId());
 			bones.interact("Take");
 			new ConditionalSleep(300, 5000) {
@@ -318,15 +371,14 @@ public class CombatMethods {
 
 		}
 	}
-	
+
 	public GroundItem getClosestLoot(IaoxItem item) {
-		return script.groundItems.closest(i -> item.getID() == i.getId() && 
-				getAssignment().getFightArea().contains(i));
+		return script.groundItems.closest(i -> item.getID() == i.getId() && getAssignment().getFightArea().contains(i)  && i.getPosition().distance(script.myPlayer()) > 7);
 	}
 
 	private GroundItem getClosestLoot() {
 		return script.groundItems.closest(i -> IaoxItem.getItemIDS(getAssignment().getLoot()).contains(i.getId())
-				&& getAssignment().getFightArea().contains(i));
+				&& getAssignment().getFightArea().contains(i) && i.getPosition().distance(script.myPlayer()) < 7);
 	}
 
 	public boolean playerHasToEat() {
@@ -348,7 +400,7 @@ public class CombatMethods {
 	}
 
 	public void buryBones() {
-		script.inventory.interact("Bury",  "Bones");
+		script.inventory.interact("Bury", "Bones");
 		new ConditionalSleep(300, 5000) {
 
 			@Override

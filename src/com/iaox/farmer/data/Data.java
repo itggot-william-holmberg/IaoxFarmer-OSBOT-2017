@@ -3,6 +3,7 @@ package com.iaox.farmer.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.iaox.farmer.ai.RandomBreak;
 import com.iaox.farmer.data.items.IaoxItem;
 
 public class Data {
@@ -18,8 +19,10 @@ public class Data {
 	public static final boolean ONE_TASK_PER_PLAYTIME = true;
 	public static List<IaoxItem> WITHDRAW_LIST = new ArrayList<IaoxItem>();
 	
-	public  static boolean trainDefence = true;
+	public  static boolean trainDefence = false;
 	public static long lastHomeTeleport;
-	public static boolean USE_BREAKS = true;
+	public static boolean USE_BREAKS = false;
+	
+	public static List<RandomBreak> PLAYER_GENERATED_BREAKS;
 
 }

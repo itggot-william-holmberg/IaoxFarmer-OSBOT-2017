@@ -12,7 +12,7 @@ public class WalkToGrandExchange extends Node{
 
 	@Override
 	public void execute() {
-		walkingMethods.webWalk(Areas.GRAND_EXCHANGE_AREA);
+		walkingMethods.webWalkGE(Areas.GRAND_EXCHANGE_AREA);
 	}
 
 	@Override

@@ -2,6 +2,12 @@ package com.iaox.farmer;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -14,7 +20,10 @@ import org.osbot.rs07.script.Script;
 import org.osbot.rs07.script.ScriptManifest;
 import org.osbot.rs07.utility.ConditionalSleep;
 
+import com.iaox.farmer.account.Mule;
+import com.iaox.farmer.account.RSAccount;
 import com.iaox.farmer.ai.IaoxIntelligence;
+import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.data.Data;
 import com.iaox.farmer.data.GrandExchangeData;
 import com.iaox.farmer.data.items.IaoxItem;
@@ -48,7 +57,7 @@ import com.iaox.farmer.node.woodcutting.WalkToWCLocation;
 import com.iaox.farmer.task.Task;
 import com.iaox.farmer.tcp.MuleThread;
 
-@ScriptManifest(author = "Iaox", info = "Farms for you", logo = "", name = "IaoxSlave", version = 0.3)
+@ScriptManifest(author = "Iaox", info = "Farms for you", logo = "", name = "IaoxSlave3", version = 0.3)
 public class IaoxAIO extends Script {
 
 	public static MuleThread muleThread;
@@ -57,9 +66,6 @@ public class IaoxAIO extends Script {
 	public static int coinsNeeded = 0;
 	public static boolean shouldTrade = false;
 	public static boolean shouldWithdrawCash;
-
-	private String username;
-	private String password;
 
 	public static boolean guiWait;
 	private Gui gui;
@@ -86,10 +92,45 @@ public class IaoxAIO extends Script {
 
 	private long taskTimeStarted;
 
+	public static Mule mule;
+
+	public static boolean shouldStop = false;
+
 	public static boolean shouldThreadRun = true;
+
+	public static RSAccount currentAccount = null;
+
+	public static boolean shouldUpdateTutorialIslandStatus = false;
+
+	public static boolean updatedTutorialIslandStatus = false;
 
 	@Override
 	public void onStart() throws InterruptedException {
+		// check so the ip is what it should be!
+		BufferedReader in;
+		String ip = "nothingyet";
+		try {
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
+			in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
+			ip = in.readLine(); // you get the IP as a String
+			log(ip);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		/*
+		 * String par = getParameters();
+		 * if(getBot().getUsername().equals("comparate664@hotmail.com")){
+		 * log("this user shoudl not be using a proxy"); }else if (par != null
+		 * && par.equals(ip)) { log("The user is succesfully uising a proxy" +
+		 * ip); }else{
+		 * log("params does not exist or the ip does not match. lets exit");
+		 * shouldStop = true; }
+		 */
+
+		// let the bot fully start
+		sleep(5000);
 
 		TASK_HANDLER = new LinkedList<Task>();
 		NODE_HANDLER = new ArrayList<Node>();
@@ -98,22 +139,12 @@ public class IaoxAIO extends Script {
 
 		addGrandExchangeData();
 
-		username = getBot().getUsername();
-		switch (username) {
-		default:
-			password = "pass123";
-			break;
-		}
-
 		muleThread = new MuleThread(this);
 
 		gui = new Gui();
 		guiWait = true;
 
 		login();
-
-		ii = new IaoxIntelligence();
-		ii.start(this);
 
 		timeStarted = System.currentTimeMillis();
 
@@ -123,8 +154,13 @@ public class IaoxAIO extends Script {
 
 	@Override
 	public int onLoop() {
-		handleGui();
-		if (shouldTrade) {
+		if (shouldStop) {
+			stop();
+		} else if (ii == null) {
+			initIaoxIntelligent();
+		} else if (guiWait) {
+			handleGui();
+		} else if (shouldTrade) {
 			handleTrade();
 		} else if (!GrandExchangeData.ITEMS_TO_BUY_LIST.isEmpty()) {
 			handleGrandExchange();
@@ -135,8 +171,16 @@ public class IaoxAIO extends Script {
 		return 600;
 	}
 
-	private void handeBreakLogout() {
-		if(client.isLoggedIn()){
+	private void initIaoxIntelligent() {
+		if (ii == null) {
+			ii = new IaoxIntelligence();
+			ii.start(this);
+		}
+
+	}
+
+	private void handleBreakLogout() {
+		if (client.isLoggedIn()) {
 			logout("We should break");
 		}
 	}
@@ -166,23 +210,24 @@ public class IaoxAIO extends Script {
 
 	private void executeGrandExchangeNode() {
 		log("handle ge task");
-		if(client.isLoggedIn()){
-		Boolean active = false;
-		for (Node node : GRAND_EXCHANGE_NODE_HANDLER) {
-			if (node.active()) {
-				active = true;
-				CURRENT_NODE = node;
-				node.execute();
-				break;
+		if (client.isLoggedIn()) {
+			Boolean active = false;
+			for (Node node : GRAND_EXCHANGE_NODE_HANDLER) {
+				if (node.active()) {
+					active = true;
+					CURRENT_NODE = node;
+					node.execute();
+					break;
+				}
 			}
-		}
 
-		// Should probably keep track of this to map where and when no node can
-		// be found.
-		if (!active) {
-			CURRENT_NODE = null;
-		}
-		}else{
+			// Should probably keep track of this to map where and when no node
+			// can
+			// be found.
+			if (!active) {
+				CURRENT_NODE = null;
+			}
+		} else {
 			login();
 		}
 
@@ -207,6 +252,9 @@ public class IaoxAIO extends Script {
 		} else if (breakHandlerTask != null && !breakHandlerTask.isCompleted(this) && Data.ONE_TASK_PER_PLAYTIME) {
 			TASK_HANDLER.add(breakHandlerTask);
 		} else {
+			if(getConfigs().get(281) != 1000){
+				TASK_HANDLER.add(new Task(Assignment.TUTORIAL_ISLAND));
+			}
 			TASK_HANDLER.add(ii.generateNewTask());
 		}
 	}
@@ -224,7 +272,7 @@ public class IaoxAIO extends Script {
 		case SKILL:
 			skillSwitch();
 			break;
-		case COMBAT:
+		case MELEE:
 			combatSwitch();
 			break;
 		case QUEST:
@@ -372,7 +420,7 @@ public class IaoxAIO extends Script {
 			sleeps(IaoxAIO.random(50000, 60000));
 		}
 	}
-
+	
 	private void startNewThread() {
 		// Since the thread is using ingame data we have to be logged in before
 		// we start a new thread
@@ -386,6 +434,7 @@ public class IaoxAIO extends Script {
 			login();
 		}
 	}
+
 
 	private void trade() {
 		if (!client.isLoggedIn()) {
@@ -479,9 +528,13 @@ public class IaoxAIO extends Script {
 
 	public void login() {
 		log("lets login");
-		LoginEvent loginEvent = new LoginEvent(username, password);
-		getBot().addLoginListener(loginEvent);
-		execute(loginEvent);
+		if (!client.isLoggedIn() && currentAccount != null) {
+			LoginEvent loginEvent = new LoginEvent(currentAccount.getLogin(), currentAccount.getPassword());
+			getBot().addLoginListener(loginEvent);
+			execute(loginEvent);
+		} else {
+			log("we need an account");
+		}
 	}
 
 	private void logout(String logoutMessage) {
@@ -508,6 +561,7 @@ public class IaoxAIO extends Script {
 		g.drawString("Current task: " + CURRENT_TASK, 50, 410);
 		g.drawString("Current node: " + CURRENT_NODE, 50, 430);
 		g.drawString("Current action: " + CURRENT_ACTION, 50, 450);
+		g.drawString("Current Account: " + currentAccount.getLogin(), 50, 110);
 
 		if (startXP > 0) {
 			g.setColor(Color.BLACK);
@@ -530,7 +584,6 @@ public class IaoxAIO extends Script {
 						90);
 			}
 		}
-
 	}
 
 	public int getPerHour(int totalGainedInRunTime, long runTime) {

@@ -40,13 +40,13 @@ public class IntelligentMining {
 		if (getMiningLevel() < 99 && getClosestAvailableAssignment(15) != null) {
 			return getClosestAvailableAssignment(15);
 		}
-		return MiningAssignment.IRON_ORE_RIMMINGTON;
+		return MiningAssignment.TIN_ORE_RIMMINGTON;
 	}
 
 	private List<MiningAssignment> getAvailableAssignments() {
 		List<MiningAssignment> tempList = new ArrayList<MiningAssignment>();
 		Arrays.asList(MiningAssignment.values()).forEach(ass -> {
-			if (ass.getRequiredLevel() < getMiningLevel()) {
+			if (ass.getRequiredLevel() <= getMiningLevel()) {
 				tempList.add(ass);
 			}
 		});

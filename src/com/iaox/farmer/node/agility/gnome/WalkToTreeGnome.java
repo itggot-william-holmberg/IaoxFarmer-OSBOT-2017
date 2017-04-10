@@ -11,7 +11,7 @@ public class WalkToTreeGnome extends Node{
 
 	@Override
 	public boolean active() {
-		if(!agilityMethods.playerInAgilityArea()) {
+		if(!agilityMethods.playerInAgilityArea() && walkingMethods.playerHasCammyTeleport()) {
 			return true;
 		}
 		return false;
