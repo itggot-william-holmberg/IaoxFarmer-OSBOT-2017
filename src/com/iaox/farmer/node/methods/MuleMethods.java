@@ -1,6 +1,7 @@
 package com.iaox.farmer.node.methods;
 
 import org.osbot.rs07.api.model.Player;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
@@ -9,25 +10,25 @@ import com.iaox.farmer.data.Areas;
 
 public class MuleMethods {
 
-	private Script script;
+	private MethodProvider methodProvider;
 	
-	public MuleMethods(Script script){
-		 this.script = script;
+	public MuleMethods(MethodProvider methodProvider){
+		 this.methodProvider = methodProvider;
 	}
 	
 	public boolean playerInGe(){
-		return Areas.GRAND_EXCHANGE_AREA.contains(script.myPlayer());
+		return Areas.GRAND_EXCHANGE_AREA.contains(methodProvider.myPlayer());
 	}
 	
 	public void tradePlayer() {
-		Player player = script.players.closest(p -> p.getName().equals(IaoxAIO.muleThread.getMule()));
+		Player player = methodProvider.players.closest(p -> p.getName().equals(IaoxAIO.muleThread.getMule()));
 		if (player != null) {
-			script.log("player exists, lets trade");
+			methodProvider.log("player exists, lets trade");
 			player.interact("Trade with");
 			new ConditionalSleep(10000) {
 				@Override
 				public boolean condition() throws InterruptedException {
-					return script.trade.isCurrentlyTrading();
+					return methodProvider.trade.isCurrentlyTrading();
 				}
 
 			}.sleep();
@@ -36,17 +37,17 @@ public class MuleMethods {
 	
 	public void acceptSecondTradeInterface() {
 
-		if (script.trade.didOtherAcceptTrade()) {
-			script.trade.acceptTrade();
+		if (methodProvider.trade.didOtherAcceptTrade()) {
+			methodProvider.trade.acceptTrade();
 			new ConditionalSleep(10000) {
 				@Override
 				public boolean condition() throws InterruptedException {
-					return script.trade.isCurrentlyTrading();
+					return methodProvider.trade.isCurrentlyTrading();
 				}
 			}.sleep();
 		}
 
-		if (!script.trade.isCurrentlyTrading() && !script.inventory.contains(995)) {
+		if (!methodProvider.trade.isCurrentlyTrading() && !methodProvider.inventory.contains(995)) {
 			IaoxAIO.shouldTrade = false;
 		}
 	}

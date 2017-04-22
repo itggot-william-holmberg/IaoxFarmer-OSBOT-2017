@@ -12,6 +12,7 @@ public enum Assignment {
 	ATTACK(AssignmentType.MELEE, Skill.ATTACK),
 	DEFENCE(AssignmentType.MELEE, Skill.DEFENCE), 
 	FISHING(AssignmentType.SKILL, Skill.FISHING),
+	CRAFTING(AssignmentType.SKILL, Skill.CRAFTING),
 	TUTORIAL_ISLAND(AssignmentType.QUEST);
 	
 	private AssignmentType type;

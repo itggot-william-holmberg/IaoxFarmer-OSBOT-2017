@@ -19,7 +19,7 @@ public class GnomeCourse extends Node {
 	public void execute() {
 
 		for (AgilityObstacle obstacle : AgilityAssignment.GNOME.getObstacles()) {
-			if (AreaMethods.playerInArea(obstacle.getArea(), script)) {
+			if (AreaMethods.playerInArea(obstacle.getArea(), methodProvider)) {
 				agilityMethods.climbObs(obstacle.getAction(), obstacle.getID());
 				sleeps(IaoxAIO.random(1000,2500));
 				new ConditionalSleep(5000, 600) {

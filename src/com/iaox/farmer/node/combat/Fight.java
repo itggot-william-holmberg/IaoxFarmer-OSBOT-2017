@@ -25,7 +25,7 @@ public class Fight extends Node {
 			combatMethods.combatSleep();
 		} else if (combatMethods.lootIsAvailable()) {
 			combatMethods.loot();
-		} else if (Data.trainDefence && script.inventory.contains("Bones")) {
+		} else if (Data.trainDefence && methodProvider.inventory.contains("Bones")) {
 			combatMethods.buryBones();
 		}  else {
 			combatMethods.fight();

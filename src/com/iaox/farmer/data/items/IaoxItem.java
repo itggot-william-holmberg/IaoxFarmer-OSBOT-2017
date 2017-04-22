@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum IaoxItem {
+	
+	//crafting
+	MOLTEN_GLASS("Molten glass", 1775), SODA_ASH("Soda ash", 1781), BUCKET_OF_SAND("Bucket of sand", 1783), NEEDLE(
+			"Needle",
+			1733), THREAD("Thread", 1734), SNAKESKIN("Snakeskin", 6289), SNAKESKIN_CHAPS("Snakeskin chaps", 6324),
 	//pickaxe
 	BRONZE_PICKAXE("Bronze pickaxe",1265), MITHRIL_PICKAXE("Mithril pickaxe",1273), 
 	ADAMANT_PICKAXE("Adamant pickaxe",1271), RUNE_PICKAXE("Rune pickaxe",1275),

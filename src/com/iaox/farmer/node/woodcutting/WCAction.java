@@ -14,7 +14,7 @@ public class WCAction extends Node{
 	@Override
 	public void execute() {
 		checkContinue();
-		if (!script.myPlayer().isAnimating()) {
+		if (!methodProvider.myPlayer().isAnimating()) {
 			wcMethods.cut();
 		} else {
 			wcMethods.cutSleep();

@@ -14,7 +14,7 @@ public class MiningAction extends Node {
 
 	@Override
 	public void execute() {
-		if (!script.myPlayer().isAnimating()) {
+		if (!methodProvider.myPlayer().isAnimating()) {
 			miningMethods.mine();
 		} else {
 			miningMethods.mineSleep();

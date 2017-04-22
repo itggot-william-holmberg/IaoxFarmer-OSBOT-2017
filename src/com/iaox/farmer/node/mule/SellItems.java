@@ -16,16 +16,16 @@ public class SellItems extends Node {
 
 	@Override
 	public void execute() {
-		if (!script.grandExchange.isOpen()) {
+		if (!methodProvider.grandExchange.isOpen()) {
 			geMethods.openGE();
 		} else if (geMethods.collectButtonIsVisible()) {
-			int amountOfCash = (int) script.inventory.getAmount(995);
-			script.grandExchange.collect();
+			int amountOfCash = (int) methodProvider.inventory.getAmount(995);
+			methodProvider.grandExchange.collect();
 			new ConditionalSleep(5000, 10000) {
 
 				@Override
 				public boolean condition() {
-					return script.inventory.getAmount(995) > amountOfCash;
+					return methodProvider.inventory.getAmount(995) > amountOfCash;
 				}
 			}.sleep();
 			GrandExchangeData.SHOULD_COLLECT = false;

@@ -14,7 +14,7 @@ public class FishingAction extends Node{
 	@Override
 	public void execute() {
 		checkContinue();
-		if (!script.myPlayer().isAnimating()) {
+		if (!methodProvider.myPlayer().isAnimating()) {
 			fishingMethods.fish();
 		} else {
 			fishingMethods.fishSleep();

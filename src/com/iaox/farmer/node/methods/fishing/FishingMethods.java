@@ -5,6 +5,7 @@ import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
@@ -18,14 +19,14 @@ import com.iaox.farmer.data.items.IaoxItem;
 
 public class FishingMethods {
 	
-	private Script script;
+	private MethodProvider methodProvider;
 	
-	public FishingMethods(Script script){
-		this.script = script;
+	public FishingMethods(MethodProvider methodProvider){
+		this.methodProvider = methodProvider;
 	}
 	
 	public boolean playerInArea(Area area) {
-		return area.contains(script.myPlayer());
+		return area.contains(methodProvider.myPlayer());
 	}
 
 	public boolean playerInBankArea() {
@@ -40,18 +41,18 @@ public class FishingMethods {
 		if (getAssignment() != null && getAssignment().getBankArea() != null) {
 			return getAssignment().getBankArea();
 		}
-		return WebBank.getNearest(script).getArea();
+		return WebBank.getNearest(methodProvider).getArea();
 	}
 
 	public boolean readyToFish() {
-		return IaoxIntelligence.getFishingAssignment() != null && playerHasFishingGear() && !script.inventory.isFull();
+		return IaoxIntelligence.getFishingAssignment() != null && playerHasFishingGear() && !methodProvider.inventory.isFull();
 	}
 
 	public boolean playerHasFishingGear() {
 		boolean bool = true;
 		if (getAssignment().getInventoryItems() != null) {
 			for (IaoxItem item : getAssignment().getInventoryItems()) {
-				if (script.inventory.contains(item.getName())) {
+				if (methodProvider.inventory.contains(item.getName())) {
 					// inv contains the item. good
 				} else if (!Data.WITHDRAW_LIST.contains(item)) {
 					Data.WITHDRAW_LIST.add(item);
@@ -68,7 +69,7 @@ public class FishingMethods {
 
 	private void sleep(int i) {
 		try {
-			script.sleep(i);
+			methodProvider.sleep(i);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,7 +88,7 @@ public class FishingMethods {
 		IaoxAIO.CURRENT_ACTION = "Lets fish!";
 		FishingAssignment assignment = getAssignment();
 
-		NPC fishingSpot = script.npcs.closest(object -> assignment.getObjectIDs().contains(object.getId())
+		NPC fishingSpot = methodProvider.npcs.closest(object -> assignment.getObjectIDs().contains(object.getId())
 				&& assignment.getFishingArea().contains(object) && !object.getPosition().equals(new Position(3246,3157,0)));
 		if (fishingSpot != null && fishingSpot.interact(assignment.getActionName())) {
 			fishSleep(fishingSpot);
@@ -104,7 +105,7 @@ public class FishingMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return tree != null && !tree.exists() || !script.myPlayer().isAnimating();
+				return tree != null && !tree.exists() || !methodProvider.myPlayer().isAnimating();
 			}
 		}.sleep();
 	}
@@ -115,7 +116,7 @@ public class FishingMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return !script.myPlayer().isAnimating();
+				return !methodProvider.myPlayer().isAnimating();
 			}
 		}.sleep();
 	}

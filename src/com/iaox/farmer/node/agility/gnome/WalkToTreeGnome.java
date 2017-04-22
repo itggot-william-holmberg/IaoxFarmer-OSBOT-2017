@@ -19,25 +19,25 @@ public class WalkToTreeGnome extends Node{
 
 	@Override
 	public void execute() {
-		if(!GnomeData.gnomeGateArea.contains(script.myPlayer())&& !GnomeData.outsideGnomeAgil.contains(script.myPlayer())) {
+		if(!GnomeData.gnomeGateArea.contains(methodProvider.myPlayer())&& !GnomeData.outsideGnomeAgil.contains(methodProvider.myPlayer())) {
 			walkingMethods.webWalk(new Position(2461, 3380, 0));
 		}
-		else if(GnomeData.gnomeGateArea.contains(script.myPlayer()) && script.myPlayer().getPosition().getY() < 3384) {
+		else if(GnomeData.gnomeGateArea.contains(methodProvider.myPlayer()) && methodProvider.myPlayer().getPosition().getY() < 3384) {
 			if(continueMessageIsVisible()){
 				checkContinue();
 			}else{
 				openGate();
 			}
 		}
-		else if(script.myPlayer().getPosition().getY() > 3384 && GnomeData.outsideGnomeAgil.contains(script.myPlayer()) && !GnomeData.gnomeAgilityArea.contains(script.myPlayer())) {
+		else if(methodProvider.myPlayer().getPosition().getY() > 3384 && GnomeData.outsideGnomeAgil.contains(methodProvider.myPlayer()) && !GnomeData.gnomeAgilityArea.contains(methodProvider.myPlayer())) {
 			walkingMethods.webWalk(new Position(2474, 3438, 0));
 		}
-		else if(GnomeData.gnomeAgilityArea.contains(script.myPlayer()) && !agilityMethods.playerInAgilityArea()) {
+		else if(GnomeData.gnomeAgilityArea.contains(methodProvider.myPlayer()) && !agilityMethods.playerInAgilityArea()) {
 			walkingMethods.walk(new Position(2474, 3438, 0));
 		}
 		else {
 			try {
-				script.sleep(500);
+				methodProvider.sleep(500);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -46,14 +46,14 @@ public class WalkToTreeGnome extends Node{
 	}
 
 	private void openGate()  {
-		RS2Object gate = script.objects.closest("Gate");
+		RS2Object gate = methodProvider.objects.closest("Gate");
 		
 		if(gate != null) {
 			if(gate.isVisible()) {
 				gate.interact("Open");
 				sleeps(2500);
 			}else {
-				script.camera.toEntity(gate);
+				methodProvider.camera.toEntity(gate);
 			}
 		}
 		

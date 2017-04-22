@@ -17,8 +17,8 @@ public class WalkToBankFromFight extends Node {
 	public void execute() {
 		switch (combatMethods.getAssignment()) {
 		case CHAOS_DRUIDS_TAVERLEY:
-			if(script.myPosition().getY() > 9000 && script.inventory.contains("Falador teleport")){
-				script.inventory.interact("Break",  "Falador teleport");
+			if(methodProvider.myPosition().getY() > 9000 && methodProvider.inventory.contains("Falador teleport")){
+				methodProvider.inventory.interact("Break",  "Falador teleport");
 				sleeps(5000 + IaoxAIO.random(1000));
 			}else{
 				walkingMethods.webWalk(combatMethods.getBankArea());

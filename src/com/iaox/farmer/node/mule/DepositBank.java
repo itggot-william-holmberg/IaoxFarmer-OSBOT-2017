@@ -17,50 +17,50 @@ public class DepositBank extends Node {
 
 	@Override
 	public void execute() {
-		if (!script.bank.isOpen()) {
+		if (!methodProvider.bank.isOpen()) {
 			try {
-				script.bank.open();
+				methodProvider.bank.open();
 				new ConditionalSleep(5000) {
 					@Override
 					public boolean condition() throws InterruptedException {
 						sleeps(300);
-						return script.bank.isOpen();
+						return methodProvider.bank.isOpen();
 					}
 				}.sleep();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} else if (script.bank.contains(995)) {
-			script.bank.withdrawAll(995);
+		} else if (methodProvider.bank.contains(995)) {
+			methodProvider.bank.withdrawAll(995);
 			new ConditionalSleep(5000) {
 				@Override
 				public boolean condition() throws InterruptedException {
 					sleeps(300);
-					return !script.bank.contains(995);
+					return !methodProvider.bank.contains(995);
 				}
 			}.sleep();
 		} else if (!GrandExchangeData.CURRENT_SELLABLE_ITEMS.isEmpty()) {
 			for (IaoxItem item : GrandExchangeData.CURRENT_SELLABLE_ITEMS) {
-				if (!script.bank.contains(item.getName())) {
+				if (!methodProvider.bank.contains(item.getName())) {
 					GrandExchangeData.CURRENT_SELLABLE_ITEMS.remove(item);
-				} else if (script.bank.getWithdrawMode() != BankMode.WITHDRAW_NOTE) {
-					script.bank.enableMode(BankMode.WITHDRAW_NOTE);
+				} else if (methodProvider.bank.getWithdrawMode() != BankMode.WITHDRAW_NOTE) {
+					methodProvider.bank.enableMode(BankMode.WITHDRAW_NOTE);
 					new ConditionalSleep(5000) {
 						@Override
 						public boolean condition() throws InterruptedException {
 							sleeps(300);
-							return script.bank.getInsertMode() == BankMode.WITHDRAW_NOTE;
+							return methodProvider.bank.getInsertMode() == BankMode.WITHDRAW_NOTE;
 						}
 					}.sleep();
 				} else {
-					script.bank.withdrawAll(item.getName());
+					methodProvider.bank.withdrawAll(item.getName());
 					GrandExchangeData.SHOULD_COLLECT = true;
 					new ConditionalSleep(5000) {
 						@Override
 						public boolean condition() throws InterruptedException {
 							sleeps(300);
-							return !script.bank.contains(item.getName());
+							return !methodProvider.bank.contains(item.getName());
 						}
 					}.sleep();
 				}

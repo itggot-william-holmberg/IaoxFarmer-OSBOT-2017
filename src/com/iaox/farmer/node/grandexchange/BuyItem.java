@@ -17,7 +17,7 @@ public class BuyItem extends Node {
 
 	@Override
 	public void execute() {
-		if (!script.grandExchange.isOpen()) {
+		if (!methodProvider.grandExchange.isOpen()) {
 			geMethods.openGE();
 		} else if(geMethods.inventoryContains(GrandExchangeData.DEFAULT_SELLABLE_ITEMS)){
 			geMethods.sellItems();

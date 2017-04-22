@@ -3,6 +3,7 @@ package com.iaox.farmer.data;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.map.Position;
 import org.osbot.rs07.api.map.constants.Banks;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 public enum WebBank {
@@ -34,11 +35,11 @@ public enum WebBank {
         this.area = area;
     }
 
-    public static WebBank getNearest(Script script) {
+    public static WebBank getNearest(MethodProvider methodProvider) {
         WebBank bank = null;
         int distance = Integer.MAX_VALUE;
         for (WebBank b : WebBank.values()) {
-            final int bDistance = b.area.getRandomPosition().distance(script.myPosition());
+            final int bDistance = b.area.getRandomPosition().distance(methodProvider.myPosition());
             if (bDistance < distance) {
                 distance = bDistance;
                 bank = b;

@@ -1,14 +1,12 @@
 package com.iaox.farmer.frame;
 
-
-
-
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -90,6 +88,10 @@ public class Gui {
 	private JLabel lblNewLabel;
 	private JLabel lblMinutesToBreak;
 
+	private JComboBox<Integer> comboBoxMinutesPerTask;
+
+	private JCheckBox checkBoxTaskUseLimitedTime;
+
 	/**
 	 * Launch the application.
 	 * 
@@ -113,11 +115,9 @@ public class Gui {
 	}
 
 	private void initTopPanel() {
-		
-
-		
 
 		panel.add(comboBoxSkillGoal);
+
 		switchToStartPanelButton = new JButton("Task Handler");
 		switchToStartPanelButton.setBounds(10, 3, 99, 16);
 		frame.getContentPane().add(switchToStartPanelButton);
@@ -162,9 +162,9 @@ public class Gui {
 		breakDestScroll = new JScrollPane();
 		breakDestScroll.setBounds(373, 80, 191, 247);
 		breakPanel.add(breakDestScroll);
-		
+
 		breakDestModel = new DefaultListModel<RandomBreak>();
-		
+
 		breakDestList = new JList<RandomBreak>(breakDestModel);
 		breakDestList.setFont(new Font("Tahoma", Font.PLAIN, 8));
 		breakDestScroll.setColumnHeaderView(breakDestList);
@@ -172,7 +172,7 @@ public class Gui {
 		playTimeComboBox = new JComboBox<Integer>();
 		playTimeComboBox.setBounds(224, 93, 52, 27);
 
-		for (int i = 30; i <= 250;) {
+		for (int i = 1; i <= 250;) {
 			playTimeComboBox.addItem(i);
 			i++;
 		}
@@ -211,22 +211,24 @@ public class Gui {
 		lblMinutesToBreak.setBounds(50, 137, 145, 14);
 		breakPanel.add(lblMinutesToBreak);
 		breakPanel.setVisible(false);
-		
+
 		addBreakButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				breakDestModel.addElement(new RandomBreak(Integer.parseInt(playTimeComboBox.getSelectedItem().toString()),Integer.parseInt(breakTimeComboBox.getSelectedItem().toString())));
+				breakDestModel
+						.addElement(new RandomBreak(Integer.parseInt(playTimeComboBox.getSelectedItem().toString()),
+								Integer.parseInt(breakTimeComboBox.getSelectedItem().toString())));
 			}
 
 		});
-		
+
 		removeBreakButton.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RandomBreak selectedBreak = breakDestList.getSelectedValue();
-				if(selectedBreak != null){
+				if (selectedBreak != null) {
 					breakDestModel.remove(breakDestList.getSelectedIndex());
 				}
 			}
@@ -294,6 +296,15 @@ public class Gui {
 
 	private void initButtonAndCheckBoxes() {
 
+		comboBoxMinutesPerTask = new JComboBox<Integer>();
+		comboBoxMinutesPerTask.setBounds(229, 261, 52, 27);
+		panel.add(comboBoxMinutesPerTask);
+
+		checkBoxTaskUseLimitedTime = new JCheckBox("Bot for x amount of minutes");
+		checkBoxTaskUseLimitedTime.setFont(new Font("Dialog", Font.PLAIN, 10));
+		checkBoxTaskUseLimitedTime.setBounds(173, 238, 164, 16);
+		panel.add(checkBoxTaskUseLimitedTime);
+
 		addTaskButton = new JButton("ADD >>");
 		addTaskButton.setBounds(216, 299, 83, 16);
 		panel.add(addTaskButton);
@@ -344,16 +355,7 @@ public class Gui {
 			}
 
 		});
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+
 		addTaskButton = new JButton("ADD >>");
 		addTaskButton.setBounds(216, 299, 83, 16);
 		panel.add(addTaskButton);
@@ -383,12 +385,12 @@ public class Gui {
 				for (int i = 0; i < taskDestList.getModel().getSize();) {
 
 					Task selectedTask = taskDestList.getModel().getElementAt(i);
-					if (selectedTask.getAssignment().getType() == AssignmentType.SKILL
-							&& ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())) > 0) {
+					if (selectedTask.getAssignment().getType() == AssignmentType.SKILL && ExperienceTable
+							.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())) > 0) {
 						IaoxAIO.TASK_HANDLER.add(selectedTask);
 
-					} else if (selectedTask.getAssignment().getType() == AssignmentType.MELEE
-							&& ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())) > 0) {
+					} else if (selectedTask.getAssignment().getType() == AssignmentType.MELEE && ExperienceTable
+							.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())) > 0) {
 						IaoxAIO.TASK_HANDLER.add(selectedTask);
 					}
 					i++;
@@ -402,7 +404,7 @@ public class Gui {
 					for (int i = 0; i < breakDestList.getModel().getSize();) {
 
 						RandomBreak selectedBreak = breakDestList.getModel().getElementAt(i);
-						if(selectedBreak != null){
+						if (selectedBreak != null) {
 							Data.PLAYER_GENERATED_BREAKS.add(selectedBreak);
 						}
 						i++;
@@ -412,7 +414,7 @@ public class Gui {
 			}
 
 		});
-		
+
 		comboBoxSkillGoal = new JComboBox<Integer>();
 		comboBoxSkillGoal.setBounds(229, 89, 52, 27);
 	}
@@ -425,7 +427,7 @@ public class Gui {
 		Arrays.asList(Assignment.values()).forEach(stage -> {
 			sourcemodel.addElement(stage);
 		});
-		
+
 		taskSourceScroll = new JScrollPane();
 		taskSourceScroll.setBounds(45, 93, 122, 242);
 		panel.add(taskSourceScroll);
@@ -458,6 +460,11 @@ public class Gui {
 			i++;
 		}
 
+		for (int i = 0; i <= 300;) {
+			comboBoxMinutesPerTask.addItem(i);
+			i += 10;
+		}
+
 	}
 
 	private void initFrame() {
@@ -467,7 +474,7 @@ public class Gui {
 		frame.getContentPane().setLayout(null);
 		frame.setSize(600, 500);
 		frame.setVisible(true);
-		
+
 		panel = new JPanel();
 		panel.setBounds(0, 22, 594, 353);
 		frame.getContentPane().add(panel);
@@ -482,7 +489,7 @@ public class Gui {
 				return new Task(taskSourceList.getSelectedValue(),
 						ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
 						taskSourceList.getSelectedValue().getSkill(),
-						(AgilityAssignment) comboBoxAgilityAssignment.getSelectedItem());
+						(AgilityAssignment) comboBoxAgilityAssignment.getSelectedItem(), getTaskSession());
 			}
 			break;
 		case ATTACK:
@@ -490,15 +497,15 @@ public class Gui {
 				return new Task(taskSourceList.getSelectedValue(),
 						ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
 						taskSourceList.getSelectedValue().getSkill(),
-						(FightingAssignment) comboBoxFightingAssignment.getSelectedItem());
+						(FightingAssignment) comboBoxFightingAssignment.getSelectedItem(), getTaskSession());
 			}
 			break;
 		case DEFENCE:
 			if (chooseAssignmentCheckBox.isSelected() && comboBoxFightingAssignment.getSelectedItem() != null) {
 				return new Task(taskSourceList.getSelectedValue(),
-					ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
+						ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
 						taskSourceList.getSelectedValue().getSkill(),
-						(FightingAssignment) comboBoxFightingAssignment.getSelectedItem());
+						(FightingAssignment) comboBoxFightingAssignment.getSelectedItem(), getTaskSession());
 			}
 			break;
 		case MINING:
@@ -506,14 +513,14 @@ public class Gui {
 				return new Task(taskSourceList.getSelectedValue(),
 						ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
 						taskSourceList.getSelectedValue().getSkill(),
-						(MiningAssignment) comboBoxMiningAssignment.getSelectedItem());
+						(MiningAssignment) comboBoxMiningAssignment.getSelectedItem(), getTaskSession());
 			}
 		case STRENGTH:
 			if (chooseAssignmentCheckBox.isSelected() && comboBoxFightingAssignment.getSelectedItem() != null) {
 				return new Task(taskSourceList.getSelectedValue(),
 						ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
 						taskSourceList.getSelectedValue().getSkill(),
-						(FightingAssignment) comboBoxFightingAssignment.getSelectedItem());
+						(FightingAssignment) comboBoxFightingAssignment.getSelectedItem(), getTaskSession());
 			}
 			break;
 		case WOODCUTTING:
@@ -521,20 +528,28 @@ public class Gui {
 				return new Task(taskSourceList.getSelectedValue(),
 						ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
 						taskSourceList.getSelectedValue().getSkill(),
-						(WoodcuttingAssignment) comboBoxWoodcuttingAssignment.getSelectedItem());
+						(WoodcuttingAssignment) comboBoxWoodcuttingAssignment.getSelectedItem(), getTaskSession());
 			}
 		case FISHING:
 			if (chooseAssignmentCheckBox.isSelected() && comboBoxFishingAssignment.getSelectedItem() != null) {
 				return new Task(taskSourceList.getSelectedValue(),
 						ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
 						taskSourceList.getSelectedValue().getSkill(),
-						(FishingAssignment) comboBoxFishingAssignment.getSelectedItem());
+						(FishingAssignment) comboBoxFishingAssignment.getSelectedItem(), getTaskSession());
 			}
 
 		}
 		return new Task(taskSourceList.getSelectedValue(),
 				ExperienceTable.getXp(Integer.parseInt(comboBoxSkillGoal.getSelectedItem().toString())),
-				taskSourceList.getSelectedValue().getSkill());
+				taskSourceList.getSelectedValue().getSkill(), getTaskSession());
+	}
+
+	private long getTaskSession() {
+		if (checkBoxTaskUseLimitedTime.isSelected()) {
+			int minutes = Integer.parseInt(comboBoxMinutesPerTask.getSelectedItem().toString());
+			return TimeUnit.MINUTES.toMillis(minutes);
+		}
+		return 0;
 	}
 
 	public void setAssignmentDropDownList(Assignment assignment) {

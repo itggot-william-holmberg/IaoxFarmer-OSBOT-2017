@@ -16,10 +16,10 @@ public class BankFight extends Node {
 
 	@Override
 	public void execute() {
-		if (script.inventory.getEmptySlots() < 28-combatMethods.getFoodAmount()-1) {
-			bankingMethods.depositAll();
-		} else if (script.inventory.contains("coins")) {
-			bankingMethods.depositAll("Coins");
+		if (methodProvider.inventory.getEmptySlots() < 28-combatMethods.getFoodAmount()-1) {
+			bankProvider.depositAll();
+		} else if (methodProvider.inventory.contains("coins")) {
+			bankProvider.depositAll("Coins");
 		} else if (!Data.WITHDRAW_LIST.isEmpty()) {
 			combatMethods.withdrawNeededItems();
 		}

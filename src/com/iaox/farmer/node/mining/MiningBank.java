@@ -35,16 +35,16 @@ public class MiningBank extends Node {
 	}
 
 	private void depositBoxBanking() {
-		if (script.inventory.isFull()) {
-			bankingMethods.depositBoxDepositAllExcept(miningMethods.getPickaxe());
+		if (methodProvider.inventory.isFull()) {
+			bankProvider.depositBoxDepositAllExcept(miningMethods.getPickaxe());
 		}
 	}
 
 	private void defaultBanking() {
-		if (script.inventory.isFull()) {
-			bankingMethods.depositAll();
+		if (methodProvider.inventory.isFull()) {
+			bankProvider.depositAll();
 		}else if(!miningMethods.playerHasPickaxe()){
-			bankingMethods.withdraw(miningMethods.getPickaxe());
+			bankProvider.withdraw(miningMethods.getPickaxe());
 		}
 	}
 

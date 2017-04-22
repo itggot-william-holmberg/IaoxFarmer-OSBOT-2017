@@ -6,6 +6,7 @@ import org.osbot.rs07.api.map.constants.Banks;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
@@ -18,14 +19,14 @@ import com.iaox.farmer.data.items.IaoxItem;
 
 public class MiningMethods {
 
-	private Script script;
+	private MethodProvider methodProvider;
 
-	public MiningMethods(Script script) {
-		this.script = script;
+	public MiningMethods(MethodProvider methodProvider) {
+		this.methodProvider = methodProvider;
 	}
 
 	public boolean playerInArea(Area area) {
-		return area.contains(script.myPlayer());
+		return area.contains(methodProvider.myPlayer());
 	}
 
 	public boolean playerInBankArea() {
@@ -46,13 +47,13 @@ public class MiningMethods {
 				return getAssignment().getBankArea();
 			}
 
-			return WebBank.getNearest(script).getArea();
+			return WebBank.getNearest(methodProvider).getArea();
 		}
 		return null;
 	}
 
 	public boolean readyToMine() {
-		return IaoxIntelligence.getMiningAssignment() != null && playerHasPickaxe() && !script.inventory.isFull();
+		return IaoxIntelligence.getMiningAssignment() != null && playerHasPickaxe() && !methodProvider.inventory.isFull();
 	}
 
 	public boolean playerHasPickaxe() {
@@ -60,11 +61,11 @@ public class MiningMethods {
 			return true;
 		}
 
-		if (script.equipment.isWieldingWeapon(getPickaxe())) {
+		if (methodProvider.equipment.isWieldingWeapon(getPickaxe())) {
 			return true;
 		}
 
-		if (script.inventory.contains(getPickaxe())) {
+		if (methodProvider.inventory.contains(getPickaxe())) {
 			return !canEquipPickaxe();
 		}
 		return false;
@@ -74,50 +75,50 @@ public class MiningMethods {
 		switch (getPickaxe()) {
 
 		case "Bronze pickaxe":
-			if (script.bank.isOpen()) {
-				script.bank.close();
+			if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				return true;
 			} else {
-				script.inventory.interact("Wield", getPickaxe());
+				methodProvider.inventory.interact("Wield", getPickaxe());
 				sleep(2500);
 				return true;
 			}
 
 		case "Mithril pickaxe":
-			if (script.getSkills().getStatic(Skill.ATTACK) < 20) {
+			if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 20) {
 				return false;
-			} else if (script.bank.isOpen()) {
-				script.bank.close();
+			} else if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				sleep(2500);
 				return true;
 			} else {
-				script.inventory.interact("Wield", getPickaxe());
+				methodProvider.inventory.interact("Wield", getPickaxe());
 				sleep(2500);
 				return true;
 			}
 
 		case "Adamant pickaxe":
-			if (script.getSkills().getStatic(Skill.ATTACK) < 30) {
+			if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 30) {
 				return false;
-			} else if (script.bank.isOpen()) {
-				script.bank.close();
+			} else if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				sleep(2500);
 				return true;
 			} else {
-				script.inventory.interact("Wield", getPickaxe());
+				methodProvider.inventory.interact("Wield", getPickaxe());
 				sleep(2500);
 				return true;
 			}
 
 		case "Rune pickaxe":
-			if (script.getSkills().getStatic(Skill.ATTACK) < 40) {
+			if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 40) {
 				return false;
-			} else if (script.bank.isOpen()) {
-				script.bank.close();
+			} else if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				sleep(2500);
 				return true;
 			} else {
-				script.inventory.interact("Wield", getPickaxe());
+				methodProvider.inventory.interact("Wield", getPickaxe());
 				sleep(2500);
 				return true;
 			}
@@ -128,7 +129,7 @@ public class MiningMethods {
 
 	private void sleep(int i) {
 		try {
-			script.sleep(i);
+			methodProvider.sleep(i);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -137,15 +138,15 @@ public class MiningMethods {
 	}
 
 	public String getPickaxe() {
-		if (script.getSkills().getStatic(Skill.MINING) < 21) {
+		if (methodProvider.getSkills().getStatic(Skill.MINING) < 21) {
 			return IaoxItem.BRONZE_PICKAXE.getName();
 		}
 
-		if (script.getSkills().getStatic(Skill.MINING) < 31) {
+		if (methodProvider.getSkills().getStatic(Skill.MINING) < 31) {
 			return IaoxItem.MITHRIL_PICKAXE.getName();
 		}
 
-		if (script.getSkills().getStatic(Skill.MINING) < 41) {
+		if (methodProvider.getSkills().getStatic(Skill.MINING) < 41) {
 			return IaoxItem.ADAMANT_PICKAXE.getName();
 		}
 
@@ -161,7 +162,7 @@ public class MiningMethods {
 		IaoxAIO.CURRENT_ACTION = "Lets Mine!";
 		MiningAssignment assignment = getAssignment();
 
-		RS2Object ore = script.objects.closest(object -> assignment.getObjectIDs().contains(object.getId())
+		RS2Object ore = methodProvider.objects.closest(object -> assignment.getObjectIDs().contains(object.getId())
 				&& assignment.getObjectArea().contains(object));
 		if (ore != null && ore.interact("Mine")) {
 			mineSleep(ore);
@@ -178,7 +179,7 @@ public class MiningMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return ore != null && !ore.exists() || !script.myPlayer().isAnimating();
+				return ore != null && !ore.exists() || !methodProvider.myPlayer().isAnimating();
 			}
 		}.sleep();
 	}
@@ -189,7 +190,7 @@ public class MiningMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return !script.myPlayer().isAnimating();
+				return !methodProvider.myPlayer().isAnimating();
 			}
 		}.sleep();
 	}

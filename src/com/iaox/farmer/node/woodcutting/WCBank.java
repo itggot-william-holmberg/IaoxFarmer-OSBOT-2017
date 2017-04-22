@@ -25,16 +25,16 @@ public class WCBank extends Node {
 	}
 
 	private void depositBoxBanking() {
-		if (script.inventory.isFull()) {
-			bankingMethods.depositBoxDepositAllExcept(wcMethods.getAxe());
+		if (methodProvider.inventory.isFull()) {
+			bankProvider.depositBoxDepositAllExcept(wcMethods.getAxe());
 		}
 	}
 
 	private void defaultBanking() {
-		if (script.inventory.isFull()) {
-			bankingMethods.depositAll();
+		if (methodProvider.inventory.isFull()) {
+			bankProvider.depositAll();
 		}else if(!wcMethods.playerHasAxe()){
-			bankingMethods.withdraw(wcMethods.getAxe());
+			bankProvider.withdraw(wcMethods.getAxe());
 		}
 	}
 

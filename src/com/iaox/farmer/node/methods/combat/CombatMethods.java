@@ -8,6 +8,7 @@ import org.osbot.rs07.api.model.GroundItem;
 import org.osbot.rs07.api.model.Item;
 import org.osbot.rs07.api.model.NPC;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
@@ -19,16 +20,16 @@ import com.iaox.farmer.assignment.combat.gear.GearSetups;
 import com.iaox.farmer.data.Data;
 import com.iaox.farmer.data.WebBank;
 import com.iaox.farmer.data.items.IaoxItem;
-import com.iaox.farmer.node.methods.BankingMethods;
+import com.iaox.farmer.node.provider.BankProvider;
 
 public class CombatMethods {
 
-	private Script script;
-	private BankingMethods bankingMethods;
+	private MethodProvider methodProvider;
+	private BankProvider bankingMethods;
 
-	public CombatMethods(Script script) {
-		this.script = script;
-		this.bankingMethods = new BankingMethods(script);
+	public CombatMethods(MethodProvider methodProvider) {
+		this.methodProvider = methodProvider;
+		this.bankingMethods = new BankProvider(methodProvider);
 	}
 
 	public FightingAssignment getAssignment() {
@@ -36,8 +37,8 @@ public class CombatMethods {
 	}
 
 	public boolean playerCanAttack() {
-		return !script.myPlayer().isAnimating() && script.myPlayer().isAttackable()
-				&& !script.myPlayer().isUnderAttack() && !script.myPlayer().isMoving();
+		return !methodProvider.myPlayer().isAnimating() && methodProvider.myPlayer().isAttackable()
+				&& !methodProvider.myPlayer().isUnderAttack() && !methodProvider.myPlayer().isMoving();
 	}
 
 	public void attack() {
@@ -45,37 +46,37 @@ public class CombatMethods {
 	}
 
 	public NPC getClosestFreeNPC(String[] name) {
-		return script.getNpcs()
+		return methodProvider.getNpcs()
 				.closest(npc -> !npc.isUnderAttack() && npc.getHealthPercent() > 0 && npc.getInteracting() == null
 						&& Arrays.asList(name).contains(npc.getName()) && npc.exists()
 						&& getAssignment().getFightArea().contains(npc) && npc.hasAction("Attack"));
 	}
 
 	public boolean playerInBankArea() {
-		return getBankArea().contains(script.myPlayer());
+		return getBankArea().contains(methodProvider.myPlayer());
 	}
 
 	public Area getBankArea() {
-		if (Banks.GRAND_EXCHANGE.contains(script.myPlayer())) {
+		if (Banks.GRAND_EXCHANGE.contains(methodProvider.myPlayer())) {
 			return Banks.GRAND_EXCHANGE;
 		}
 		if (getAssignment().getBankArea() != null) {
 			return getAssignment().getBankArea();
 		} else {
-			return WebBank.getNearest(script).getArea();
+			return WebBank.getNearest(methodProvider).getArea();
 		}
 	}
 
 	public boolean playerIsReadyForFight() {
-		return playerHasGear() && playerHasInventoryItems() && script.inventory.getAmount(995) < 50000
-				&& script.inventory.getEmptySlotCount() != 0;
+		return playerHasGear() && playerHasInventoryItems() && methodProvider.inventory.getAmount(995) < 50000
+				&& methodProvider.inventory.getEmptySlotCount() != 0;
 	}
 
 	private boolean playerHasInventoryItems() {
 		boolean bool = true;
 		if (getAssignment().getInventory() != null) {
 			for (IaoxItem item : getAssignment().getInventory()) {
-				if (script.inventory.contains(item.getID())) {
+				if (methodProvider.inventory.contains(item.getID())) {
 					// inv contains the item. good
 				} else if (!Data.WITHDRAW_LIST.contains(item)) {
 					Data.WITHDRAW_LIST.add(item);
@@ -93,16 +94,16 @@ public class CombatMethods {
 		for (IaoxItem item : getGear().getFullGear()) {
 			if (item == null) {
 				// item is null because there is no required item to wear.
-			} else if (script.equipment.contains(item.getName())) {
-			} else if (script.inventory.contains(item.getName())) {
-				Item inventoryItem = script.inventory.getItem(item.getName());
+			} else if (methodProvider.equipment.contains(item.getName())) {
+			} else if (methodProvider.inventory.contains(item.getName())) {
+				Item inventoryItem = methodProvider.inventory.getItem(item.getName());
 				equipItem(inventoryItem);
 			} else if (!Data.WITHDRAW_LIST.contains(item)) {
 				Data.WITHDRAW_LIST.add(item);
-				script.log("false!!!" + item.getName());
+				methodProvider.log("false!!!" + item.getName());
 				bool = false;
 			} else {
-				script.log("false!!!");
+				methodProvider.log("false!!!");
 				bool = false;
 			}
 		}
@@ -110,7 +111,7 @@ public class CombatMethods {
 	}
 
 	private void equipItem(Item item) {
-		if (script.widgets.closeOpenInterface()) {
+		if (methodProvider.widgets.closeOpenInterface()) {
 			if (item.hasAction("Wield")) {
 				item.interact("Wield");
 			} else if (item.hasAction("Wear")) {
@@ -120,7 +121,7 @@ public class CombatMethods {
 
 				@Override
 				public boolean condition() throws InterruptedException {
-					return script.equipment.contains(item.getName());
+					return methodProvider.equipment.contains(item.getName());
 				}
 
 			}.sleep();
@@ -176,32 +177,32 @@ public class CombatMethods {
 	}*/
 
 	private GearSetups getMeleeGear() {
-		if (script.getSkills().getStatic(Skill.ATTACK) < 30) {
+		if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 30) {
 			return GearSetups.STARTER_MELEE_SETUP;
 		}
 
-		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 30
-				&& script.worlds.isMembersWorld()) {
+		if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 40 && methodProvider.getSkills().getStatic(Skill.DEFENCE) < 30
+				&& methodProvider.worlds.isMembersWorld()) {
 			return GearSetups.ADDY_SCIM_P2P;
 		}
 
-		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 30) {
+		if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 40 && methodProvider.getSkills().getStatic(Skill.DEFENCE) < 30) {
 			return GearSetups.ADDY_SCIM_F2P;
 		}
 
-		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30
-				&& script.worlds.isMembersWorld()) {
+		if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 60 && methodProvider.getSkills().getStatic(Skill.DEFENCE) < 30
+				&& methodProvider.worlds.isMembersWorld()) {
 			return GearSetups.RUNE_SCIM_P2P;
 		}
 
-		if (script.getSkills().getStatic(Skill.ATTACK) < 60 && script.getSkills().getStatic(Skill.DEFENCE) < 30) {
+		if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 60 && methodProvider.getSkills().getStatic(Skill.DEFENCE) < 30) {
 			return GearSetups.RUNE_SCIM_F2P;
 		}
 
-		if (script.getSkills().getStatic(Skill.ATTACK) < 40 && script.getSkills().getStatic(Skill.DEFENCE) < 45) {
+		if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 40 && methodProvider.getSkills().getStatic(Skill.DEFENCE) < 45) {
 			return GearSetups.FULL_ADAMANT_ADDY_SCIM;
 		}
-		if (script.getSkills().getStatic(Skill.ATTACK) < 99 && script.getSkills().getStatic(Skill.DEFENCE) < 45) {
+		if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 99 && methodProvider.getSkills().getStatic(Skill.DEFENCE) < 45) {
 			return GearSetups.FULL_ADAMANT_RUNE_SCIM;
 		}
 
@@ -211,9 +212,9 @@ public class CombatMethods {
 	public void withdrawNeededItems() {
 		IaoxItem item = Data.WITHDRAW_LIST.get(0);
 		// noted
-		if (script.inventory.contains(item.getID() + 1)) {
+		if (methodProvider.inventory.contains(item.getID() + 1)) {
 			bankingMethods.depositAll(item.getName());
-		} else if (script.inventory.contains(item.getName()) || script.equipment.contains(item.getName())) {
+		} else if (methodProvider.inventory.contains(item.getName()) || methodProvider.equipment.contains(item.getName())) {
 			Data.WITHDRAW_LIST.remove(item);
 		} else {
 			switch (item) {
@@ -230,17 +231,17 @@ public class CombatMethods {
 	}
 
 	public int getFoodAmount() {
-		if (script.getSkills().getStatic(Skill.DEFENCE) < 30 && IaoxIntelligence.getFightingAssignment() == FightingAssignment.SEAGULL){
+		if (methodProvider.getSkills().getStatic(Skill.DEFENCE) < 30 && IaoxIntelligence.getFightingAssignment() == FightingAssignment.SEAGULL){
 			return 16;
 		}
-		if (script.getSkills().getStatic(Skill.DEFENCE) < 30) {
+		if (methodProvider.getSkills().getStatic(Skill.DEFENCE) < 30) {
 			return 4;
 		}
 		return 3;
 	}
 
 	public boolean playerInFightArea() {
-		return getAssignment() != null && getAssignment().getFightArea().contains(script.myPlayer());
+		return getAssignment() != null && getAssignment().getFightArea().contains(methodProvider.myPlayer());
 	}
 
 	public void fight() {
@@ -271,27 +272,27 @@ public class CombatMethods {
 	}
 
 	public void checkStyle() {
-		if (script.widgets.isVisible(593) && getAssignment() != null) {
+		if (methodProvider.widgets.isVisible(593) && getAssignment() != null) {
 			Skill skill = IaoxAIO.CURRENT_TASK.getAssignment().getSkill();
 			if (skill.equals(Skill.STRENGTH) && (attackStyle() != 1)) {
-				script.mouse.click(689, 270, false);// click "train strength"
+				methodProvider.mouse.click(689, 270, false);// click "train strength"
 			} else if (skill.equals(Skill.ATTACK) && (attackStyle() != 0)) {
-				script.mouse.click(601, 269, false); // click "train attack"
+				methodProvider.mouse.click(601, 269, false); // click "train attack"
 			} else if (skill.equals(Skill.DEFENCE) && (attackStyle() != 3)) {
-				script.mouse.click(701, 335, false); // click "train def"
+				methodProvider.mouse.click(701, 335, false); // click "train def"
 			} else if (skill.equals(Skill.RANGED) && (attackStyle() != 1)) {
-				script.mouse.click(689, 270, false);// click "train range"
+				methodProvider.mouse.click(689, 270, false);// click "train range"
 			}
 
 		} else {
-			script.mouse.click(545, 190, false);
+			methodProvider.mouse.click(545, 190, false);
 		}
 
 	}
 
 	public int attackStyle() {
 
-		return script.configs.get(43);
+		return methodProvider.configs.get(43);
 
 	}
 
@@ -301,8 +302,8 @@ public class CombatMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return playerHasToEat() || (!script.myPlayer().isAnimating() && script.myPlayer().isAttackable()
-						&& !script.myPlayer().isUnderAttack() && !script.myPlayer().isMoving());
+				return playerHasToEat() || (!methodProvider.myPlayer().isAnimating() && methodProvider.myPlayer().isAttackable()
+						&& !methodProvider.myPlayer().isUnderAttack() && !methodProvider.myPlayer().isMoving());
 			}
 		}.sleep();
 	}
@@ -313,9 +314,9 @@ public class CombatMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return playerHasToEat() || (!(npc.getHealthPercent() > 0) && !script.myPlayer().isAnimating()
-						&& script.myPlayer().isAttackable() && !script.myPlayer().isUnderAttack()
-						&& !script.myPlayer().isMoving());
+				return playerHasToEat() || (!(npc.getHealthPercent() > 0) && !methodProvider.myPlayer().isAnimating()
+						&& methodProvider.myPlayer().isAttackable() && !methodProvider.myPlayer().isUnderAttack()
+						&& !methodProvider.myPlayer().isMoving());
 			}
 		}.sleep();
 	}
@@ -325,7 +326,7 @@ public class CombatMethods {
 		GroundItem item = getClosestLoot();
 
 		if (item != null) {
-			int amountBeforeLoot = (int) script.getInventory().getAmount(item.getId());
+			int amountBeforeLoot = (int) methodProvider.getInventory().getAmount(item.getId());
 			item.interact("Take");
 			try {
 				IaoxAIO.sleep(1500);
@@ -337,7 +338,7 @@ public class CombatMethods {
 
 				@Override
 				public boolean condition() throws InterruptedException {
-					return script.inventory.getAmount(item.getId()) > amountBeforeLoot;
+					return methodProvider.inventory.getAmount(item.getId()) > amountBeforeLoot;
 				}
 
 			}.sleep();
@@ -346,13 +347,13 @@ public class CombatMethods {
 		GroundItem bones = getClosestLoot(IaoxItem.BONES);
 
 		if (bones != null && Data.trainDefence) {
-			int amountBeforeLoot = (int) script.getInventory().getAmount(bones.getId());
+			int amountBeforeLoot = (int) methodProvider.getInventory().getAmount(bones.getId());
 			bones.interact("Take");
 			new ConditionalSleep(300, 5000) {
 
 				@Override
 				public boolean condition() throws InterruptedException {
-					return script.inventory.getAmount(bones.getId()) > amountBeforeLoot;
+					return methodProvider.inventory.getAmount(bones.getId()) > amountBeforeLoot;
 				}
 
 			}.sleep();
@@ -373,39 +374,39 @@ public class CombatMethods {
 	}
 
 	public GroundItem getClosestLoot(IaoxItem item) {
-		return script.groundItems.closest(i -> item.getID() == i.getId() && getAssignment().getFightArea().contains(i)  && i.getPosition().distance(script.myPlayer()) > 7);
+		return methodProvider.groundItems.closest(i -> item.getID() == i.getId() && getAssignment().getFightArea().contains(i)  && i.getPosition().distance(methodProvider.myPlayer()) > 7);
 	}
 
 	private GroundItem getClosestLoot() {
-		return script.groundItems.closest(i -> IaoxItem.getItemIDS(getAssignment().getLoot()).contains(i.getId())
-				&& getAssignment().getFightArea().contains(i) && i.getPosition().distance(script.myPlayer()) < 7);
+		return methodProvider.groundItems.closest(i -> IaoxItem.getItemIDS(getAssignment().getLoot()).contains(i.getId())
+				&& getAssignment().getFightArea().contains(i) && i.getPosition().distance(methodProvider.myPlayer()) < 7);
 	}
 
 	public boolean playerHasToEat() {
-		return script.myPlayer().getHealthPercent() < 45;
+		return methodProvider.myPlayer().getHealthPercent() < 45;
 	}
 
 	public void eat() {
-		int hp = script.myPlayer().getHealthPercent();
-		script.log("lets eat");
-		script.inventory.interact("Eat", IaoxItem.COOKED_TROUT.getID());
+		int hp = methodProvider.myPlayer().getHealthPercent();
+		methodProvider.log("lets eat");
+		methodProvider.inventory.interact("Eat", IaoxItem.COOKED_TROUT.getID());
 		new ConditionalSleep(300, 5000) {
 
 			@Override
 			public boolean condition() throws InterruptedException {
-				return hp != script.myPlayer().getHealthPercent();
+				return hp != methodProvider.myPlayer().getHealthPercent();
 			}
 
 		}.sleep();
 	}
 
 	public void buryBones() {
-		script.inventory.interact("Bury", "Bones");
+		methodProvider.inventory.interact("Bury", "Bones");
 		new ConditionalSleep(300, 5000) {
 
 			@Override
 			public boolean condition() throws InterruptedException {
-				return !script.inventory.contains("Bones");
+				return !methodProvider.inventory.contains("Bones");
 			}
 
 		}.sleep();

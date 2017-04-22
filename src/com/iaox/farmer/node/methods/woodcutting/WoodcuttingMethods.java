@@ -3,6 +3,7 @@ package com.iaox.farmer.node.methods.woodcutting;
 import org.osbot.rs07.api.map.Area;
 import org.osbot.rs07.api.model.RS2Object;
 import org.osbot.rs07.api.ui.Skill;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 import org.osbot.rs07.utility.ConditionalSleep;
 
@@ -14,14 +15,14 @@ import com.iaox.farmer.data.items.IaoxItem;
 
 public class WoodcuttingMethods {
 	
-	private Script script;
+	private MethodProvider methodProvider;
 	
-	public WoodcuttingMethods(Script script){
-		this.script = script;
+	public WoodcuttingMethods(MethodProvider methodProvider){
+		this.methodProvider = methodProvider;
 	}
 	
 	public boolean playerInArea(Area area) {
-		return area.contains(script.myPlayer());
+		return area.contains(methodProvider.myPlayer());
 	}
 
 	public boolean playerInBankArea() {
@@ -34,21 +35,21 @@ public class WoodcuttingMethods {
 	 */
 	public Area getBankArea() {
 		if (getAssignment() != null) {
-			return WebBank.getNearest(script).getArea();
+			return WebBank.getNearest(methodProvider).getArea();
 		}
 		return null;
 	}
 
 	public boolean readyToCut() {
-		return IaoxIntelligence.getWCAssignment() != null && playerHasAxe() && !script.inventory.isFull();
+		return IaoxIntelligence.getWCAssignment() != null && playerHasAxe() && !methodProvider.inventory.isFull();
 	}
 
 	public boolean playerHasAxe() {
-		if (script.equipment.isWieldingWeapon(getAxe())) {
+		if (methodProvider.equipment.isWieldingWeapon(getAxe())) {
 			return true;
 		}
 
-		if (script.inventory.contains(getAxe())) {
+		if (methodProvider.inventory.contains(getAxe())) {
 			return !canEquipAxe();
 		}
 		return false;
@@ -58,50 +59,50 @@ public class WoodcuttingMethods {
 		switch (getAxe()) {
 
 		case "Bronze axe":
-			if (script.bank.isOpen()) {
-				script.bank.close();
+			if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				return true;
 			} else {
-				script.inventory.interact("Wield", getAxe());
+				methodProvider.inventory.interact("Wield", getAxe());
 				sleep(2500);
 				return true;
 			}
 
 		case "Mithril axe":
-			if (script.getSkills().getStatic(Skill.ATTACK) < 20) {
+			if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 20) {
 				return false;
-			} else if (script.bank.isOpen()) {
-				script.bank.close();
+			} else if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				sleep(2500);
 				return true;
 			} else {
-				script.inventory.interact("Wield", getAxe());
+				methodProvider.inventory.interact("Wield", getAxe());
 				sleep(2500);
 				return true;
 			}
 
 		case "Adamant axe":
-			if (script.getSkills().getStatic(Skill.ATTACK) < 30) {
+			if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 30) {
 				return false;
-			} else if (script.bank.isOpen()) {
-				script.bank.close();
+			} else if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				sleep(2500);
 				return true;
 			} else {
-				script.inventory.interact("Wield", getAxe());
+				methodProvider.inventory.interact("Wield", getAxe());
 				sleep(2500);
 				return true;
 			}
 
 		case "Rune axe":
-			if (script.getSkills().getStatic(Skill.ATTACK) < 40) {
+			if (methodProvider.getSkills().getStatic(Skill.ATTACK) < 40) {
 				return false;
-			} else if (script.bank.isOpen()) {
-				script.bank.close();
+			} else if (methodProvider.bank.isOpen()) {
+				methodProvider.bank.close();
 				sleep(2500);
 				return true;
 			} else {
-				script.inventory.interact("Wield", getAxe());
+				methodProvider.inventory.interact("Wield", getAxe());
 				sleep(2500);
 				return true;
 			}
@@ -112,7 +113,7 @@ public class WoodcuttingMethods {
 
 	private void sleep(int i) {
 		try {
-			script.sleep(i);
+			methodProvider.sleep(i);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -121,15 +122,15 @@ public class WoodcuttingMethods {
 	}
 
 	public String getAxe() {
-		if (script.getSkills().getStatic(Skill.WOODCUTTING) < 21) {
+		if (methodProvider.getSkills().getStatic(Skill.WOODCUTTING) < 21) {
 			return IaoxItem.BRONZE_AXE.getName();
 		}
 
-		if (script.getSkills().getStatic(Skill.WOODCUTTING) < 31) {
+		if (methodProvider.getSkills().getStatic(Skill.WOODCUTTING) < 31) {
 			return IaoxItem.MITHRIL_AXE.getName();
 		}
 
-		if (script.getSkills().getStatic(Skill.WOODCUTTING) < 41) {
+		if (methodProvider.getSkills().getStatic(Skill.WOODCUTTING) < 41) {
 			return IaoxItem.ADAMANT_AXE.getName();
 		}
 
@@ -145,7 +146,7 @@ public class WoodcuttingMethods {
 		IaoxAIO.CURRENT_ACTION = "Lets Cut tree!";
 		WoodcuttingAssignment assignment = getAssignment();
 
-		RS2Object tree = script.objects.closest(object -> assignment.getObjectIDs().contains(object.getId())
+		RS2Object tree = methodProvider.objects.closest(object -> assignment.getObjectIDs().contains(object.getId())
 				&& assignment.getWCArea().contains(object));
 		if (tree != null && !IaoxIntelligence.lastClickedObject(tree) && tree.interact("Chop down")) {
 			cutSleep(tree);
@@ -162,7 +163,7 @@ public class WoodcuttingMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return tree != null && !tree.exists() || !script.myPlayer().isAnimating();
+				return tree != null && !tree.exists() || !methodProvider.myPlayer().isAnimating();
 			}
 		}.sleep();
 	}
@@ -173,7 +174,7 @@ public class WoodcuttingMethods {
 			@Override
 			public boolean condition() throws InterruptedException {
 				IaoxAIO.sleep(1200);
-				return !script.myPlayer().isAnimating();
+				return !methodProvider.myPlayer().isAnimating();
 			}
 		}.sleep();
 	}

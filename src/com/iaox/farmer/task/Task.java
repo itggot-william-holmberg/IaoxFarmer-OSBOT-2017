@@ -7,6 +7,7 @@ import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.assignment.AssignmentType;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
+import com.iaox.farmer.assignment.crafting.CraftingAssignment;
 import com.iaox.farmer.assignment.fishing.FishingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
 import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
@@ -21,6 +22,9 @@ public class Task {
 	private FightingAssignment specifiedFightingAssignment;
 	private AgilityAssignment specifiedAgilityAssignment;
 	private FishingAssignment specifiedFishingAssignment;
+	private CraftingAssignment specifiedCraftingAssignment;
+	private long playTime;
+	private long breakTime;
 
 	
 	public Task(Assignment assignment) {
@@ -33,48 +37,60 @@ public class Task {
 		this.skill = skill;
 	}
 	
-	public Task(Assignment assignment, int goalExperience, Skill skill, MiningAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, long playTime) {
 		this.assignment = assignment;
 		this.goalExperience = goalExperience;
 		this.skill = skill;
+		this.playTime = playTime;
+	}
+	
+	public Task(Assignment assignment, int goalExperience, Skill skill, MiningAssignment specifiedAssignment, long playTime) {
+		this.assignment = assignment;
+		this.goalExperience = goalExperience;
+		this.skill = skill;
+		this.setPlayTime(playTime);
 		setSpecifiedMiningAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int goalExperience, Skill skill, WoodcuttingAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, WoodcuttingAssignment specifiedAssignment, long playTime) {
 		this.assignment = assignment;
 		this.goalExperience = goalExperience;
 		this.skill = skill;
+		this.setPlayTime(playTime);
 		setSpecifiedWoodcuttingAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int goalExperience, Skill skill, FightingAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, FightingAssignment specifiedAssignment, long playTime) {
 		this.assignment = assignment;
 		this.goalExperience = goalExperience;
 		this.skill = skill;
+		this.setPlayTime(playTime);
 		setSpecifiedFightingAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int goalExperience, Skill skill, AgilityAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, AgilityAssignment specifiedAssignment, long playTime) {
 		this.assignment = assignment;
 		this.goalExperience = goalExperience;
 		this.skill = skill;
+		this.setPlayTime(playTime);
 		setSpecifiedAgilityAssignment(specifiedAssignment);
 	}
 	
-	public Task(Assignment assignment, int goalExperience, Skill skill, FishingAssignment specifiedAssignment) {
+	public Task(Assignment assignment, int goalExperience, Skill skill, FishingAssignment specifiedAssignment, long playTime) {
 		this.assignment = assignment;
 		this.goalExperience = goalExperience;
 		this.skill = skill;
+		this.setPlayTime(playTime);
 		setSpecifiedFishingAssignment(specifiedAssignment);
 	}
 	
-	
-	
-
-
-
-
 	public boolean isCompleted(Script script) {
+		
+		//if the task has a time session, check if it is done.
+		if(breakTime > 0 && breakTime < System.currentTimeMillis()){
+			return true;
+		}
+		
 		if(assignment.getType().equals(AssignmentType.QUEST)){
 			switch(assignment){
 			case TUTORIAL_ISLAND:
@@ -127,8 +143,31 @@ public class Task {
 		this.specifiedFishingAssignment = specifiedFishingAssignment;
 	}
 	
+	public CraftingAssignment getSpecifiedCraftingAssignment() {
+		return specifiedCraftingAssignment;
+	}
+	public void setSpecifiedCraftingAssignment(CraftingAssignment specifiedCraftingAssignment) {
+		this.specifiedCraftingAssignment = specifiedCraftingAssignment;
+	}
+	
 	public String toString(){
-		return  getGoalExperience() + ":" + getSkill();
+		return getGoalExperience() + ":" + getSkill();
+	}
+
+	public long getPlayTime() {
+		return playTime;
+	}
+
+	public void setPlayTime(long playTime) {
+		this.playTime = playTime;
+	}
+	
+	public long getBreakTime(){
+		return breakTime;
+	}
+	
+	public void setBreakTime(long playTime){
+		this.breakTime = System.currentTimeMillis() + playTime;
 	}
 
 }

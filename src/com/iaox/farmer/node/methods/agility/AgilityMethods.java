@@ -1,6 +1,7 @@
 package com.iaox.farmer.node.methods.agility;
 
 import org.osbot.rs07.api.model.RS2Object;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 import com.iaox.farmer.ai.IaoxIntelligence;
@@ -11,12 +12,12 @@ import com.iaox.farmer.node.methods.AreaMethods;
 
 public class AgilityMethods {
 
-	private Script script;
+	private MethodProvider methodProvider;
 	private int lastID;
 	private int failCheck;
 
-	public AgilityMethods(Script script) {
-		this.script = script;
+	public AgilityMethods(MethodProvider methodProvider) {
+		this.methodProvider = methodProvider;
 	}
 
 	public AgilityAssignment getAssignment() {
@@ -26,7 +27,7 @@ public class AgilityMethods {
 	public boolean playerInAgilityArea() {
 		if (getAssignment() != null) {
 			for (AgilityObstacle obstacle : getAssignment().getObstacles()) {
-				if (AreaMethods.playerInArea(obstacle.getArea(), script)) {
+				if (AreaMethods.playerInArea(obstacle.getArea(), methodProvider)) {
 					return true;
 				}
 			}
@@ -36,7 +37,7 @@ public class AgilityMethods {
 	
 	public boolean playerInGnomeAgilityArea(){
 		for (AgilityObstacle obstacle : GnomeData.GNOME_OBSTACLES) {
-			if (AreaMethods.playerInArea(obstacle.getArea(), script)) {
+			if (AreaMethods.playerInArea(obstacle.getArea(), methodProvider)) {
 				return true;
 			}
 		}
@@ -44,19 +45,19 @@ public class AgilityMethods {
 	}
 
 	public void climbObs(String obsAction, int obsName) {
-		RS2Object obs = script.objects.closest(obsName);
+		RS2Object obs = methodProvider.objects.closest(obsName);
 
 		if (obs != null && lastID != obs.getId()) {
 			if (obs.isVisible()) {
 				obs.interact(obsAction);
 				lastID = obs.getId();
-				script.log(lastID);
+				methodProvider.log(lastID);
 				failCheck = 0;
-				script.camera.moveYaw(script.camera.getYawAngle() + 30);
+				methodProvider.camera.moveYaw(methodProvider.camera.getYawAngle() + 30);
 			} else {
-				script.camera.toEntity(obs);
-				script.camera.moveYaw(script.camera.getYawAngle() + 30);
-				script.log("Moving camera to obs");
+				methodProvider.camera.toEntity(obs);
+				methodProvider.camera.moveYaw(methodProvider.camera.getYawAngle() + 30);
+				methodProvider.log("Moving camera to obs");
 			}
 		} else {
 			if (failCheck >= 5) {

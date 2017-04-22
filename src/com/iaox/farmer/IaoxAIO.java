@@ -5,9 +5,7 @@ import java.awt.Graphics2D;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -36,6 +34,10 @@ import com.iaox.farmer.node.combat.BankFight;
 import com.iaox.farmer.node.combat.Fight;
 import com.iaox.farmer.node.combat.WalkToBankFromFight;
 import com.iaox.farmer.node.combat.WalkToFight;
+import com.iaox.farmer.node.crafting.CraftingAction;
+import com.iaox.farmer.node.crafting.CraftingBank;
+import com.iaox.farmer.node.crafting.CraftingWalkToAction;
+import com.iaox.farmer.node.crafting.CraftingWalkToBank;
 import com.iaox.farmer.node.fishing.FishingAction;
 import com.iaox.farmer.node.fishing.FishingBank;
 import com.iaox.farmer.node.fishing.WalkToFishingBank;
@@ -57,7 +59,7 @@ import com.iaox.farmer.node.woodcutting.WalkToWCLocation;
 import com.iaox.farmer.task.Task;
 import com.iaox.farmer.tcp.MuleThread;
 
-@ScriptManifest(author = "Iaox", info = "Farms for you", logo = "", name = "IaoxSlave3", version = 0.3)
+@ScriptManifest(author = "Iaox", info = "Farms for you", logo = "", name = "IaoxSlave4", version = 0.3)
 public class IaoxAIO extends Script {
 
 	public static MuleThread muleThread;
@@ -106,6 +108,7 @@ public class IaoxAIO extends Script {
 
 	@Override
 	public void onStart() throws InterruptedException {
+		currentAccount = new RSAccount("tryminex@gmail.com", "password123", true);
 		// check so the ip is what it should be!
 		BufferedReader in;
 		String ip = "nothingyet";
@@ -156,10 +159,10 @@ public class IaoxAIO extends Script {
 	public int onLoop() {
 		if (shouldStop) {
 			stop();
-		} else if (ii == null) {
-			initIaoxIntelligent();
 		} else if (guiWait) {
 			handleGui();
+		} else if (ii == null) {
+			initIaoxIntelligent();
 		} else if (shouldTrade) {
 			handleTrade();
 		} else if (!GrandExchangeData.ITEMS_TO_BUY_LIST.isEmpty()) {
@@ -197,6 +200,7 @@ public class IaoxAIO extends Script {
 		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_KWUARM);
 		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_LANTADYME);
 		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.GRIMY_RANARR_WEED);
+		GrandExchangeData.DEFAULT_SELLABLE_ITEMS.add(IaoxItem.MOLTEN_GLASS);
 		addGrandExchangeNodes();
 	}
 
@@ -248,13 +252,16 @@ public class IaoxAIO extends Script {
 		Task breakHandlerTask = ii.getBreakHandler().get(0).getTask();
 		if (!TASK_HANDLER.isEmpty()) {
 			CURRENT_TASK = TASK_HANDLER.getFirst();
+			CURRENT_TASK.setBreakTime(CURRENT_TASK.getPlayTime());
+			log(CURRENT_TASK.getPlayTime());
+			log(CURRENT_TASK.getBreakTime());
+			log(System.currentTimeMillis());
 			updateNodes();
 		} else if (breakHandlerTask != null && !breakHandlerTask.isCompleted(this) && Data.ONE_TASK_PER_PLAYTIME) {
 			TASK_HANDLER.add(breakHandlerTask);
+		} else if (getConfigs().get(281) != 1000) {
+			TASK_HANDLER.add(new Task(Assignment.TUTORIAL_ISLAND));
 		} else {
-			if(getConfigs().get(281) != 1000){
-				TASK_HANDLER.add(new Task(Assignment.TUTORIAL_ISLAND));
-			}
 			TASK_HANDLER.add(ii.generateNewTask());
 		}
 	}
@@ -342,6 +349,14 @@ public class IaoxAIO extends Script {
 			NODE_HANDLER.add(new FishingBank().init(this));
 			NODE_HANDLER.add(new WalkToFishingBank().init(this));
 			NODE_HANDLER.add(new WalkToFishingLocation().init(this));
+		case CRAFTING:
+			startXP = getSkills().getExperience(Skill.CRAFTING);
+			ii.getNewCraftingAssignment();
+
+			NODE_HANDLER.add(new CraftingAction().init(this));
+			NODE_HANDLER.add(new CraftingBank().init(this));
+			NODE_HANDLER.add(new CraftingWalkToAction().init(this));
+			NODE_HANDLER.add(new CraftingWalkToBank().init(this));
 		}
 	}
 
@@ -420,7 +435,7 @@ public class IaoxAIO extends Script {
 			sleeps(IaoxAIO.random(50000, 60000));
 		}
 	}
-	
+
 	private void startNewThread() {
 		// Since the thread is using ingame data we have to be logged in before
 		// we start a new thread
@@ -434,7 +449,6 @@ public class IaoxAIO extends Script {
 			login();
 		}
 	}
-
 
 	private void trade() {
 		if (!client.isLoggedIn()) {

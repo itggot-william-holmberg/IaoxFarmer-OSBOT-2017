@@ -15,23 +15,23 @@ public class Deposit extends Node {
 
 	@Override
 	public void execute() {
-		if (!script.trade.isCurrentlyTrading() && !script.inventory.contains(995)) {
-			script.log("we are done!");
+		if (!methodProvider.trade.isCurrentlyTrading() && !methodProvider.inventory.contains(995)) {
+			methodProvider.log("we are done!");
 			IaoxAIO.shouldTrade = false;
 			return;
 		}
 
-		script.log("lets trade:" + IaoxAIO.muleThread.getMule());
+		methodProvider.log("lets trade:" + IaoxAIO.muleThread.getMule());
 
-		if (!script.trade.isCurrentlyTrading()) {
+		if (!methodProvider.trade.isCurrentlyTrading()) {
 			muleMethods.tradePlayer();
-		} else if (script.trade.isFirstInterfaceOpen()) {
-			if (script.inventory.contains(995)) {
-				script.trade.offer(995, (int) script.inventory.getAmount(995));
-			} else if (script.trade.didOtherAcceptTrade()) {
-				script.trade.acceptTrade();
+		} else if (methodProvider.trade.isFirstInterfaceOpen()) {
+			if (methodProvider.inventory.contains(995)) {
+				methodProvider.trade.offer(995, (int) methodProvider.inventory.getAmount(995));
+			} else if (methodProvider.trade.didOtherAcceptTrade()) {
+				methodProvider.trade.acceptTrade();
 			}
-		} else if (script.trade.isSecondInterfaceOpen()) {
+		} else if (methodProvider.trade.isSecondInterfaceOpen()) {
 			muleMethods.acceptSecondTradeInterface();
 		}
 

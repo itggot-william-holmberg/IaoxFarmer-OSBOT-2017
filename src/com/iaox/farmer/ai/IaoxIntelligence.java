@@ -15,12 +15,14 @@ import org.osbot.rs07.utility.ConditionalSleep;
 import com.iaox.farmer.IaoxAIO;
 import com.iaox.farmer.ai.skills.IntelligentAgility;
 import com.iaox.farmer.ai.skills.IntelligentCombat;
+import com.iaox.farmer.ai.skills.IntelligentCrafting;
 import com.iaox.farmer.ai.skills.IntelligentFishing;
 import com.iaox.farmer.ai.skills.IntelligentMining;
 import com.iaox.farmer.ai.skills.IntelligentWoodcutting;
 import com.iaox.farmer.assignment.Assignment;
 import com.iaox.farmer.assignment.agility.AgilityAssignment;
 import com.iaox.farmer.assignment.combat.FightingAssignment;
+import com.iaox.farmer.assignment.crafting.CraftingAssignment;
 import com.iaox.farmer.assignment.fishing.FishingAssignment;
 import com.iaox.farmer.assignment.mining.MiningAssignment;
 import com.iaox.farmer.assignment.woodcutting.WoodcuttingAssignment;
@@ -40,6 +42,7 @@ public class IaoxIntelligence implements Runnable {
 	private static WoodcuttingAssignment woodcuttingAssignment;
 	private static FishingAssignment fishingAssignment;
 	private static AgilityAssignment agilityAssignment;
+	private static CraftingAssignment craftingAssignment;
 
 	private static Entity lastClickedObject;
 
@@ -48,6 +51,7 @@ public class IaoxIntelligence implements Runnable {
 	private IntelligentWoodcutting intelligentWoodcutting;
 	private IntelligentAgility intelligentAgility;
 	private IntelligentFishing intelligentFishing;
+	private IntelligentCrafting intelligentCrafting;
 	
 	private IaoxCommunicator iaoxCommunicator;
 
@@ -78,6 +82,7 @@ public class IaoxIntelligence implements Runnable {
 		intelligentWoodcutting = new IntelligentWoodcutting(this.script);
 		intelligentAgility = new IntelligentAgility(this.script);
 		intelligentFishing = new IntelligentFishing(this.script);
+		intelligentCrafting = new IntelligentCrafting(this.script);
 
 		iaoxCommunicator = new IaoxCommunicator(script.getBot().getMethods());
 		
@@ -421,12 +426,16 @@ public class IaoxIntelligence implements Runnable {
 
 	public void getNewFishingAssignment() {
 		fishingAssignment = intelligentFishing.getNewAssignment();
-
+	}
+	
+	public void getNewCraftingAssignment() {
+		craftingAssignment = intelligentCrafting.getNewAssignment();
 	}
 
 	private void generateNewBreaks() {
 		script.log(Data.PLAYER_GENERATED_BREAKS);
 		if (Data.PLAYER_GENERATED_BREAKS != null && !Data.PLAYER_GENERATED_BREAKS.isEmpty()) {
+			
 			Data.PLAYER_GENERATED_BREAKS.forEach(pBreak -> {
 				break_handler.add(pBreak);
 			});
@@ -609,27 +618,30 @@ public class IaoxIntelligence implements Runnable {
 	}
 
 	public Assignment getRandomAssignment() {
-		int task = IaoxAIO.random(1, 7);
-		Assignment ass = null;
-		switch (task) {
-		case 1:
-		case 2:
-		case 3:
-		case 4:
+		
+		//to avoid getting killed in draynor.
+		if(script.getPlayers().getCombat().getCombatLevel() < 20){
 			return getRandomCombatAssignment();
-		case 5:
+		}
+		int task = IaoxAIO.random(100);
+		if(task < 40){
+			return getRandomCombatAssignment();
+		}
+		
+		if(task < 70){
+			return Assignment.CRAFTING;
+		}
+		if(task < 80){
 			return Assignment.MINING;
-		case 6:
-			return Assignment.WOODCUTTING;
-		case 7:
-			return Assignment.FISHING;
-		/*
-		 * case 6: if(script.worlds.isMembersWorld()){ return
-		 * Assignment.AGILITY; } return getRandomAssignment();
-		 */
-		default:
+		}
+		if(task < 90){
 			return Assignment.WOODCUTTING;
 		}
+		if(task < 101){
+			return Assignment.FISHING;
+		}
+
+		return getRandomCombatAssignment();
 	}
 
 	public Assignment getRandomCombatAssignment() {
@@ -659,5 +671,13 @@ public class IaoxIntelligence implements Runnable {
 			return Assignment.STRENGTH;
 
 		}
+	}
+
+	public static CraftingAssignment getCraftingAssignment() {
+		return craftingAssignment;
+	}
+
+	public static void setCraftingAssignment(CraftingAssignment craftingAssignment) {
+		IaoxIntelligence.craftingAssignment = craftingAssignment;
 	}
 }

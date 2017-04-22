@@ -1,17 +1,18 @@
 package com.iaox.farmer.node.methods;
 
 import org.osbot.rs07.api.map.Area;
+import org.osbot.rs07.script.MethodProvider;
 import org.osbot.rs07.script.Script;
 
 public class AreaMethods {
 
-	private Script script;
+	private MethodProvider methodProvider;
 	
-	public AreaMethods(Script script){
-		this.script = script;
+	public AreaMethods(MethodProvider methodProvider){
+		this.methodProvider = methodProvider;
 	}
 	
-	public static boolean playerInArea(Area area, Script script) {
-		return area.contains(script.myPlayer());
+	public static boolean playerInArea(Area area, MethodProvider methodProvider) {
+		return area.contains(methodProvider.myPlayer());
 	}
 }
